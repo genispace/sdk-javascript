@@ -1,7 +1,6 @@
 import { BaseClient } from '../client/base';
 import { 
   Task, 
-  CreateTaskRequest, 
   TaskExecution,
   PaginationParams,
   GeniSpacePaginationResponse 
@@ -33,13 +32,6 @@ export class Tasks extends BaseClient {
   }
 
   /**
-   * 创建任务
-   */
-  async create(data: CreateTaskRequest): Promise<Task> {
-    return this.post<Task>('/tasks', data);
-  }
-
-  /**
    * 获取任务执行记录列表
    */
   async getExecutions(params?: PaginationParams & {
@@ -59,35 +51,6 @@ export class Tasks extends BaseClient {
   }
 
   /**
-   * 获取任务统计信息
-   */
-  async getStatistics(): Promise<{
-    totalTasks: {
-      count: number;
-      growth: number;
-      period: string;
-    };
-    activeTasks: {
-      count: number;
-      growth: number;
-      period: string;
-    };
-    successRate: {
-      value: number;
-      change: number;
-      unit: string;
-    };
-    avgCompletionTime: {
-      formatted: string;
-      raw: number;
-      change: number;
-      slower: boolean;
-    };
-  }> {
-    return this.get('/tasks/statistics');
-  }
-
-  /**
    * 获取任务详情
    */
   async getTask(taskId: string): Promise<Task> {
@@ -95,62 +58,10 @@ export class Tasks extends BaseClient {
   }
 
   /**
-   * 更新任务
-   */
-  async update(taskId: string, data: Partial<CreateTaskRequest & {
-    description: string;
-    priority: 'LOW' | 'MEDIUM' | 'HIGH';
-    startDate: string | null;
-    endDate: string | null;
-    tags: string[];
-    webhookSecret: string;
-    webhookUrl: string;
-  }>): Promise<Task> {
-    return this.put<Task>(`/tasks/${taskId}`, data);
-  }
-
-  /**
-   * 删除任务
-   */
-  async deleteTask(taskId: string): Promise<void> {
-    return this.delete(`/tasks/${taskId}`);
-  }
-
-  /**
-   * 调度任务
-   */
-  async schedule(taskId: string): Promise<any> {
-    return this.post(`/tasks/${taskId}/schedule`);
-  }
-
-  /**
    * 执行任务
    */
-  async execute(taskId: string, mode?: 'sync' | 'async'): Promise<any> {
-    return this.post(`/tasks/${taskId}/execute`, undefined, {
-      params: { mode }
-    });
-  }
-
-  /**
-   * 获取任务日志
-   */
-  async getLogs(taskId: string): Promise<any> {
-    return this.get(`/tasks/${taskId}/logs`);
-  }
-
-  /**
-   * 导入任务配置
-   */
-  async import(taskJson: Record<string, any>): Promise<Task> {
-    return this.post<Task>('/tasks/import', { taskJson });
-  }
-
-  /**
-   * 导出任务配置
-   */
-  async export(taskId: string): Promise<any> {
-    return this.get(`/tasks/${taskId}/export`);
+  async execute(taskId: string): Promise<any> {
+    return this.post(`/tasks/${taskId}/execute`);
   }
 
   /**
@@ -220,44 +131,10 @@ export class Tasks extends BaseClient {
   }
 
   /**
-   * 添加任务执行日志
-   */
-  async addExecutionLog(executionId: string, data: {
-    level: 'INFO' | 'WARNING' | 'ERROR' | 'DEBUG';
-    message: string;
-    nodeId?: string;
-    metadata?: Record<string, any>;
-  }): Promise<void> {
-    return this.post(`/tasks/executions/${executionId}/logs`, data);
-  }
-
-  /**
    * 取消任务执行
    */
   async cancelExecution(executionId: string): Promise<void> {
     return this.post(`/tasks/runs/${executionId}/cancel`);
-  }
-
-  /**
-   * 更新任务执行记录
-   */
-  async updateExecution(executionId: string, data: {
-    status?: 'PENDING' | 'RUNNING' | 'COMPLETED' | 'FAILED';
-    currentNodeId?: string;
-    logs?: Array<{
-      level: 'INFO' | 'WARNING' | 'ERROR' | 'DEBUG';
-      message: string;
-      metadata?: Record<string, any>;
-    }>;
-    outputs?: Record<string, any>;
-    errors?: Array<{
-      message: string;
-      stack?: string;
-      code?: string;
-    }>;
-    endTime?: string;
-  }): Promise<void> {
-    return this.post(`/tasks/executions/${executionId}/update`, data);
   }
 
   /**
@@ -298,58 +175,5 @@ export class Tasks extends BaseClient {
     pagination: GeniSpacePaginationResponse;
   }> {
     return this.get(`/tasks/executions/${executionId}/logs/paginated`, params);
-  }
-
-  /**
-   * 导出任务执行日志
-   */
-  async exportExecutionLogs(executionId: string, params?: {
-    level?: 'INFO' | 'WARNING' | 'ERROR' | 'SUCCESS' | 'DEBUG';
-    search?: string;
-    nodeId?: string;
-  }): Promise<string> {
-    const response = await this.request({
-      url: `/tasks/executions/${executionId}/logs/export`,
-      method: 'GET',
-      params,
-      responseType: 'text'
-    });
-    return response.data;
-  }
-
-  /**
-   * 获取任务可用的环境变量
-   */
-  async getEnvironmentVariables(taskId: string): Promise<{
-    taskVariables: Array<{
-      key: string;
-      description?: string;
-      isSecret: boolean;
-      source: string;
-    }>;
-    configMapVariables: Array<{
-      key: string;
-      description?: string;
-      isSecret: boolean;
-      source: string;
-      configMapName: string;
-    }>;
-  }> {
-    return this.get(`/tasks/${taskId}/env-vars`);
-  }
-
-  /**
-   * 根据智能体ID获取可用的任务列表
-   */
-  async getByAgentId(agentId: string): Promise<{
-    data: Array<{
-      id: string;
-      name: string;
-      description?: string;
-      type: string;
-    }>;
-    strategy: 'all' | 'specific';
-  }> {
-    return this.get(`/tasks/agent/${agentId}`);
   }
 }

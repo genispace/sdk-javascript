@@ -177,28 +177,6 @@ export interface Task {
   updatedAt: string;
 }
 
-export interface CreateTaskRequest {
-  name: string;
-  type: 'SCHEDULED' | 'EVENT' | 'MANUAL';
-  description?: string;
-  priority?: 'LOW' | 'MEDIUM' | 'HIGH';
-  schedule?: string;
-  startDate?: string;
-  endDate?: string;
-  tags?: string[];
-  workflow?: Record<string, any>;
-  metadata?: Record<string, any>;
-  envVars?: Array<{
-    key: string;
-    value: string;
-    description?: string;
-    isSecret?: boolean;
-  }>;
-  executionConfig?: Record<string, any>;
-  errorHandling?: Record<string, any>;
-  monitoringConfig?: Record<string, any>;
-}
-
 export interface TaskExecution {
   id: string;
   taskId: string;

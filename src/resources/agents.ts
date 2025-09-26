@@ -27,15 +27,6 @@ export class Agents extends BaseClient {
   }
 
   /**
-   * 获取智能体统计信息
-   */
-  async getStatistics(): Promise<{
-    total: number;
-  }> {
-    return this.get('/agents/statistics');
-  }
-
-  /**
    * 创建智能体
    */
   async create(data: CreateAgentRequest): Promise<Agent> {
@@ -173,28 +164,6 @@ export class Agents extends BaseClient {
     deletedCount: number;
   }> {
     return this.delete(`/agents/sessions/${sessionId}/messages`);
-  }
-
-  /**
-   * 获取会话统计信息
-   */
-  async getSessionStats(params?: {
-    teamId?: string;
-    userAgentId?: string;
-    dateRange?: string;
-  }): Promise<any> {
-    return this.get('/agents/sessions/stats', params);
-  }
-
-  /**
-   * 获取智能体使用统计
-   */
-  async getUsage(params?: {
-    teamId?: string;
-    userAgentId?: string;
-    dateRange?: string;
-  }): Promise<any> {
-    return this.get('/agents/usage', params);
   }
 
   // 智能体记忆管理
