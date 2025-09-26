@@ -48,16 +48,6 @@ export class Agents extends BaseClient {
   }
 
   /**
-   * 调用智能体
-   */
-  async invoke(agentId: string, data: {
-    input: Record<string, any>;
-    overrides?: Record<string, any>;
-  }): Promise<any> {
-    return this.post(`/agents/${agentId}/invoke`, data);
-  }
-
-  /**
    * 智能体任务执行
    */
   async execute(agentId: string, data: AgentExecuteRequest): Promise<any> {
