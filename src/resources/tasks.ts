@@ -60,8 +60,9 @@ export class Tasks extends BaseClient {
   /**
    * 执行任务
    */
-  async execute(taskId: string): Promise<any> {
-    return this.post(`/tasks/${taskId}/execute`);
+  async execute(taskId: string, inputs?: Record<string, any>): Promise<any> {
+    const url = `/tasks/${taskId}/execute`;
+    return this.post(url, inputs || {});
   }
 
   /**
