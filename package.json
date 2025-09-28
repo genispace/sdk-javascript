@@ -1,6 +1,6 @@
 {
   "name": "genispace",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "GeniSpace AI Platform JavaScript SDK - Official client library for GeniSpace platform APIs",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
