@@ -73,7 +73,7 @@ export class Tasks extends BaseClient {
   }
 
   /**
-   * 获取任务输入输出参数定义
+   * 获取任务输入参数定义
    */
   async getSchema(taskId: string): Promise<{
     id: string;
@@ -81,7 +81,6 @@ export class Tasks extends BaseClient {
     description: string;
     type: string;
     inputs: Record<string, any>;
-    outputs: Record<string, any>;
   }> {
     return this.get(`/tasks/${taskId}/schema`);
   }
