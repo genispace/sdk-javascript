@@ -3,6 +3,7 @@ import { Users } from './resources/users';
 import { ApiKeys } from './resources/apiKeys';
 import { Agents } from './resources/agents';
 import { Tasks } from './resources/tasks';
+import { Storage } from './resources/storage';
 
 /**
  * GeniSpace SDK 主客户端
@@ -14,6 +15,7 @@ export class GeniSpace {
   public apiKeys: ApiKeys;
   public agents: Agents;
   public tasks: Tasks;
+  public storage: Storage;
 
   constructor(config: GeniSpaceConfig) {
     this.config = config;
@@ -23,6 +25,7 @@ export class GeniSpace {
     this.apiKeys = new ApiKeys(config);
     this.agents = new Agents(config);
     this.tasks = new Tasks(config);
+    this.storage = new Storage(config);
   }
 
   /**
@@ -34,6 +37,7 @@ export class GeniSpace {
     this.apiKeys.updateApiKey(apiKey);
     this.agents.updateApiKey(apiKey);
     this.tasks.updateApiKey(apiKey);
+    this.storage.updateApiKey(apiKey);
   }
 
   /**
@@ -45,6 +49,7 @@ export class GeniSpace {
     this.apiKeys.updateBaseURL(baseURL);
     this.agents.updateBaseURL(baseURL);
     this.tasks.updateBaseURL(baseURL);
+    this.storage.updateBaseURL(baseURL);
   }
 
   /**
