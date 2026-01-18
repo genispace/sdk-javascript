@@ -32,17 +32,18 @@ export class Users extends BaseClient {
   }
 
   /**
-   * 获取用户偏好设置
+   * 获取用户完整设置（teamId + preferences）
    */
-  async getPreferences(): Promise<UserPreferences> {
-    return this.get<UserPreferences>('/users/me/preferences');
+  async getSettings(): Promise<{ teamId: string | null; preferences: UserPreferences }> {
+    return this.get<{ teamId: string | null; preferences: UserPreferences }>('/users/me/settings');
   }
 
   /**
-   * 更新偏好设置
+   * 更新用户完整设置（teamId + preferences）
+   * 支持部分更新
    */
-  async updatePreferences(data: UserPreferences): Promise<UserPreferences> {
-    return this.put<UserPreferences>('/users/me/preferences', data);
+  async updateSettings(data: Partial<{ teamId: string | null; preferences: Partial<UserPreferences> }>): Promise<{ teamId: string | null; preferences: UserPreferences }> {
+    return this.put<{ teamId: string | null; preferences: UserPreferences }>('/users/me/settings', data);
   }
 
   /**

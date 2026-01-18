@@ -10,7 +10,7 @@ export class BaseClient {
 
   constructor(config: GeniSpaceConfig) {
     this.config = {
-      baseURL: 'https://api.genispace.com',
+      baseURL: 'https://api.genispace.ai',
       timeout: 30000,
       retries: 3,
       retryDelay: 1000,

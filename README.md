@@ -36,7 +36,7 @@ import GeniSpace from 'genispace';
 // Initialize client
 const client = new GeniSpace({
   apiKey: 'your-api-key-here',
-  baseURL: 'https://api.genispace.com', // Optional, default value
+  baseURL: 'https://api.genispace.ai', // Optional, default value
   timeout: 30000, // Optional, default 30 seconds
   retries: 3      // Optional, default 3 retries
 });
@@ -255,7 +255,7 @@ Recommended to use environment variables to store API keys:
 ```bash
 # .env file
 GENISPACE_API_KEY=your-api-key-here
-GENISPACE_BASE_URL=https://api.genispace.com
+GENISPACE_BASE_URL=https://api.genispace.ai
 ```
 
 ```javascript

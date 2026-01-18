@@ -11,7 +11,7 @@ const axios = require('axios');
 class GeniSpaceSDK {
   constructor(config) {
     this.config = {
-      baseURL: 'https://api.genispace.com',
+      baseURL: 'https://api.genispace.ai',
       timeout: 30000,
       ...config
     };
