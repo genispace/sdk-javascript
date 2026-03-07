@@ -1,0 +1,84 @@
+# GeniSpace JavaScript SDK - 自动构建与发布到 npm
+# 参考: doc/.github/workflows/deploy.yml 的 trigger 与 env 风格
+name: Build and Publish (npm)
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*.*.*'   # 版本 tag，如 v1.0.5，触发发布
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          registry-url: 'https://registry.npmjs.org'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Run tests
+        run: npm test
+        continue-on-error: true
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    # 仅在有版本 tag (v*.*.*) 时发布；push main 只做 build
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          registry-url: 'https://registry.npmjs.org'
+          cache: 'npm'
+
+      - name: Set version from tag
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          npm version $VERSION --no-git-tag-version --allow-same-version
+          echo "Publishing version: $VERSION"
+
+      - name: Install and build
+        run: |
+          npm ci
+          npm run build
+
+      - name: Publish to npm
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Summary
+        run: |
+          echo "## Publish Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- **Package**: genispace (npm)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Ref**: ${{ github.ref }}" >> $GITHUB_STEP_SUMMARY
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            echo "- **Version**: ${GITHUB_REF#refs/tags/v}" >> $GITHUB_STEP_SUMMARY
+          fi

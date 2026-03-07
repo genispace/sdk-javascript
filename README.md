@@ -353,6 +353,27 @@ const operators = await operatorClient.get('/api/operators');
 // Please refer to your operator service documentation for specific usage
 ```
 
+## 📦 Publishing（发布到 npm）
+
+### 自动发布（GitHub Actions）
+
+- 推送 **tag** `v*.*.*`（如 `v1.0.6`）时，`.github/workflows/publish.yml` 会自动：
+  - 从 tag 解析版本并写入 `package.json`
+  - 执行 `npm ci`、`npm run build`
+  - 执行 `npm publish --access public` 发布到 npm
+- 需在仓库 **Secrets** 中配置 `NPM_TOKEN`（npm 账户 → Access Tokens → Generate New Token）。
+
+### 手动发布
+
+详见 [PUBLISH_CHECKLIST.md](PUBLISH_CHECKLIST.md)。简要步骤：
+
+```bash
+npm run build
+npm version patch   # 或 minor / major
+npm publish         # 或 npm publish --tag beta
+git push origin main && git push origin --tags
+```
+
 ## 📖 Example Usage
 
 See the complete usage example in [example-usage.js](example-usage.js) which demonstrates:
