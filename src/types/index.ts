@@ -210,7 +210,10 @@ export class GeniSpaceError extends Error {
  * SDK 配置类型
  */
 export interface GeniSpaceConfig {
+  /** API Key (Bearer). Used when `accessToken` is unset. */
   apiKey: string;
+  /** Optional OAuth / session token; takes precedence over `apiKey` when set (e.g. browser GeniApps). */
+  accessToken?: string;
   baseURL?: string;
   timeout?: number;
   retries?: number;

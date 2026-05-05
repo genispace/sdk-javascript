@@ -4,6 +4,17 @@ import { ApiKeys } from './resources/apiKeys';
 import { Agents } from './resources/agents';
 import { Tasks } from './resources/tasks';
 import { Storage } from './resources/storage';
+import { Data } from './resources/data';
+import { DataSources } from './resources/dataSources';
+
+export { Data } from './resources/data';
+export type { DataListResult } from './resources/data';
+export { DataSources } from './resources/dataSources';
+export type {
+  DataSourceListItem,
+  DataSourceListPagination,
+  DataSourceReadPayload,
+} from './resources/dataSources';
 
 /**
  * GeniSpace SDK 主客户端
@@ -16,6 +27,8 @@ export class GeniSpace {
   public agents: Agents;
   public tasks: Tasks;
   public storage: Storage;
+  public data: Data;
+  public dataSources: DataSources;
 
   constructor(config: GeniSpaceConfig) {
     this.config = config;
@@ -26,6 +39,8 @@ export class GeniSpace {
     this.agents = new Agents(config);
     this.tasks = new Tasks(config);
     this.storage = new Storage(config);
+    this.data = new Data(config);
+    this.dataSources = new DataSources(config);
   }
 
   /**
@@ -38,6 +53,8 @@ export class GeniSpace {
     this.agents.updateApiKey(apiKey);
     this.tasks.updateApiKey(apiKey);
     this.storage.updateApiKey(apiKey);
+    this.data.updateApiKey(apiKey);
+    this.dataSources.updateApiKey(apiKey);
   }
 
   /**
@@ -50,6 +67,22 @@ export class GeniSpace {
     this.agents.updateBaseURL(baseURL);
     this.tasks.updateBaseURL(baseURL);
     this.storage.updateBaseURL(baseURL);
+    this.data.updateBaseURL(baseURL);
+    this.dataSources.updateBaseURL(baseURL);
+  }
+
+  /**
+   * 设置 OAuth / 会话 access token（优先于 API Key 作为 Authorization，用于 GeniApp 等浏览器场景）
+   */
+  updateAccessToken(accessToken: string | undefined): void {
+    (this.config as GeniSpaceConfig & { accessToken?: string }).accessToken = accessToken;
+    this.users.updateAccessToken(accessToken);
+    this.apiKeys.updateAccessToken(accessToken);
+    this.agents.updateAccessToken(accessToken);
+    this.tasks.updateAccessToken(accessToken);
+    this.storage.updateAccessToken(accessToken);
+    this.data.updateAccessToken(accessToken);
+    this.dataSources.updateAccessToken(accessToken);
   }
 
   /**
@@ -69,8 +102,5 @@ export { GeniSpaceError } from './types';
 // 默认导出
 export default GeniSpace;
 
-// CommonJS 兼容性
-module.exports = GeniSpace;
-module.exports.default = GeniSpace;
-module.exports.GeniSpace = GeniSpace;
-module.exports.GeniSpaceError = require('./types').GeniSpaceError;
+// 勿在此添加 `module.exports`：浏览器/Vite MF 打包会报 `module is not defined`。Node 请用
+// `require('genispace').default` 或 `require('genispace').GeniSpace`（与 tsc 的 `exports.*` 一致）。

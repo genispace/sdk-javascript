@@ -4,6 +4,9 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# SDK: keep tests out of published resource tree (use src/__tests__ instead)
+src/resources/__tests__/
+
 # Build outputs
 lib/
 dist/

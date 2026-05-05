@@ -1,5 +1,31 @@
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import axios, {
+  AxiosInstance,
+  AxiosRequestConfig,
+  AxiosResponse,
+  InternalAxiosRequestConfig,
+} from 'axios';
 import { GeniSpaceResponse, GeniSpaceConfig, GeniSpaceError } from '../types';
+
+function bearerFromConfig(config: GeniSpaceConfig): string {
+  const c = config as GeniSpaceConfig & { accessToken?: string };
+  return c.accessToken ?? config.apiKey;
+}
+
+/** True when `document` exists (browser). SDK `lib` has no DOM types — use `globalThis`, not `window`. */
+function isBrowserEnvironment(): boolean {
+  return typeof (globalThis as { document?: unknown }).document !== 'undefined';
+}
+
+/** Browsers refuse `User-Agent` on XHR/fetch (axios uses XHR in the browser). Keep it for Node. */
+function sdkDefaultHeaders(): Record<string, string> {
+  const h: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  if (!isBrowserEnvironment()) {
+    h['User-Agent'] = 'GeniSpace-SDK-JS/1.0.0';
+  }
+  return h;
+}
 
 /**
  * GeniSpace API 基础客户端
@@ -21,10 +47,9 @@ export class BaseClient {
       baseURL: this.config.baseURL,
       timeout: this.config.timeout,
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${this.config.apiKey}`,
-        'User-Agent': 'GeniSpace-SDK-JS/1.0.0'
-      }
+        ...sdkDefaultHeaders(),
+        Authorization: `Bearer ${bearerFromConfig(this.config)}`,
+      },
     });
 
     this.setupInterceptors();
@@ -34,15 +59,16 @@ export class BaseClient {
    * 设置请求和响应拦截器
    */
   private setupInterceptors(): void {
-    // 请求拦截器
+    // 请求拦截器：每次请求刷新 Authorization（支持运行时切换 accessToken / apiKey）
     this.http.interceptors.request.use(
-      (config) => {
-        // 可以在这里添加请求日志
-        return config;
+      (reqConfig: InternalAxiosRequestConfig) => {
+        const token = bearerFromConfig(this.config);
+        if (reqConfig.headers) {
+          (reqConfig.headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
+        }
+        return reqConfig;
       },
-      (error) => {
-        return Promise.reject(error);
-      }
+      (error: unknown) => Promise.reject(error)
     );
 
     // 响应拦截器
@@ -50,22 +76,29 @@ export class BaseClient {
       (response: AxiosResponse<GeniSpaceResponse>) => {
         return response;
       },
-      async (error) => {
-        const { config, response } = error;
+      async (error: any) => {
+        const config = error?.config as InternalAxiosRequestConfig & { __retryCount?: number } | undefined;
+        const response = error?.response;
 
-        // 如果是网络错误且配置了重试
-        if (!response && this.config.retries && config.__retryCount < this.config.retries) {
-          config.__retryCount = config.__retryCount || 0;
-          config.__retryCount += 1;
-
-          // 等待后重试
-          await new Promise(resolve => setTimeout(resolve, this.config.retryDelay));
-          return this.http(config);
+        // 网络错误重试（须存在 axios request config；取消/非 axios 错误常无 config）
+        const retries = this.config.retries ?? 0;
+        if (config && !response && retries > 0) {
+          const attempt = Number(config.__retryCount) || 0;
+          if (attempt < retries) {
+            config.__retryCount = attempt + 1;
+            await new Promise(resolve => setTimeout(resolve, this.config.retryDelay));
+            return this.http(config);
+          }
         }
 
-        // 转换为 GeniSpaceError
-        const message = response?.data?.error || error.message || '请求失败';
-        const code = response?.data?.code || 'UNKNOWN_ERROR';
+        // 转换为 GeniSpaceError（平台错误体常用 message）
+        const data = response?.data as Record<string, unknown> | undefined;
+        const message =
+          (typeof data?.message === 'string' && data.message) ||
+          (typeof data?.error === 'string' && data.error) ||
+          error.message ||
+          '请求失败';
+        const code = (typeof data?.code === 'string' && data.code) || 'UNKNOWN_ERROR';
         const statusCode = response?.status;
 
         throw new GeniSpaceError(message, code, statusCode);
@@ -188,12 +221,11 @@ export class BaseClient {
       baseURL: this.config.baseURL,
       timeout: this.config.timeout || 30000,
       headers: {
-        'Content-Type': 'application/json',
-        'User-Agent': 'GeniSpace-SDK-JS/1.0.0',
-        ...config?.headers
+        ...sdkDefaultHeaders(),
+        ...config?.headers,
       },
       // 对于验证接口，不要因为HTTP 401而抛出错误
-      validateStatus: (status) => {
+      validateStatus: (status: number) => {
         if (url.includes('/validate/')) {
           return status >= 200 && status < 500; // 接受200-499范围的状态码
         }
@@ -269,23 +301,31 @@ export class BaseClient {
     config?: AxiosRequestConfig
   ): Promise<T> {
     const response = await this.http.delete<GeniSpaceResponse<T>>(url, config);
-    
-    if (!response.data.success) {
+    const body = response.data as GeniSpaceResponse<T> | '' | null | undefined;
+
+    if (body == null || body === '') {
+      return { success: true } as T;
+    }
+
+    if (typeof body === 'object' && 'success' in body && !body.success) {
       throw new GeniSpaceError(
-        response.data.error || '请求失败',
-        response.data.code
+        (body as GeniSpaceResponse).message || (body as GeniSpaceResponse).error || '请求失败',
+        (body as GeniSpaceResponse).code
       );
     }
 
-    // 返回标准化响应格式，保持平台API的完整响应结构
-    return {
-      success: response.data.success,
-      data: response.data.data,
-      error: response.data.error,
-      code: response.data.code,
-      message: response.data.message,
-      timestamp: response.data.timestamp || new Date().toISOString()
-    } as any;
+    if (typeof body === 'object' && 'success' in body) {
+      return {
+        success: body.success,
+        data: body.data,
+        error: body.error,
+        code: body.code,
+        message: body.message,
+        timestamp: body.timestamp || new Date().toISOString()
+      } as any;
+    }
+
+    return body as any;
   }
 
   /**
@@ -328,7 +368,15 @@ export class BaseClient {
    */
   public updateApiKey(apiKey: string): void {
     this.config.apiKey = apiKey;
-    this.http.defaults.headers['Authorization'] = `Bearer ${apiKey}`;
+    this.http.defaults.headers['Authorization'] = `Bearer ${bearerFromConfig(this.config)}`;
+  }
+
+  /**
+   * 设置 OAuth / 会话 access token（优先于 API Key 作为 Authorization，用于 GeniApp 等浏览器场景）
+   */
+  public updateAccessToken(accessToken: string | undefined): void {
+    (this.config as GeniSpaceConfig & { accessToken?: string }).accessToken = accessToken;
+    this.http.defaults.headers['Authorization'] = `Bearer ${bearerFromConfig(this.config)}`;
   }
 
   /**
