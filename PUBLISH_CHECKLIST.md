@@ -102,12 +102,12 @@ npm init -y
 npm install genispace
 
 # 测试导入
-node -e "const GeniSpace = require('genispace'); console.log('SDK loaded:', typeof GeniSpace);"
+node -e "const { GeniSpace } = require('genispace'); console.log('SDK loaded:', typeof GeniSpace);"
 ```
 
 ### ✅ 使用测试
 ```javascript
-const GeniSpace = require('genispace');
+const { GeniSpace } = require('genispace');
 
 const client = new GeniSpace({
   apiKey: 'your-api-key',

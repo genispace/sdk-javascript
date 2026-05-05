@@ -353,6 +353,39 @@ const operators = await operatorClient.get('/api/operators');
 // Please refer to your operator service documentation for specific usage
 ```
 
+## 📊 DataSources (team SQL READ)
+
+Team-scoped SQL DataSources use **`GET /datasources`** and **`GET /datasources/:id/data`**. The SDK wraps these on `GeniSpace` as **`client.dataSources`**.
+
+**Permission**: **`team.datasource.read`** (Bearer token — same auth as the rest of the platform API).
+
+**Typical GeniApp flow**
+
+1. After install, managed seeds are upserted with `metadata.managedByGeniapp` and `metadata.geniappIdentifier` matching the app (e.g. `hr-timesheet`).
+2. List datasources with `limit` high enough to include seeds, then pick the row where `identifier` matches your seed key (e.g. `hr_ts_submitted_by_project`).
+3. Call `queryDataSourceRead(id, { page, limit, ... })` — extra keys become SQL bind parameters when the datasource statement uses `{{param}}` placeholders.
+
+```typescript
+import GeniSpace from 'genispace';
+
+const client = new GeniSpace({
+  apiKey: process.env.GENISPACE_TOKEN!,
+  baseURL: 'https://api.example.com',
+});
+
+const { items } = await client.dataSources.listDataSources({ limit: 500 });
+const row = items.find(
+  (x) =>
+    x.identifier === 'hr_ts_submitted_by_project' &&
+    (x.metadata as any)?.managedByGeniapp === true &&
+    (x.metadata as any)?.geniappIdentifier === 'hr-timesheet'
+);
+if (!row?.id) throw new Error('Managed datasource not found');
+
+const result = await client.dataSources.queryDataSourceRead(row.id, { limit: 1000 });
+console.log(result.data);
+```
+
 ## 📖 Example Usage
 
 See the complete usage example in [example-usage.js](example-usage.js) which demonstrates:
