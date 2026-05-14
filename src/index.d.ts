@@ -7,10 +7,13 @@ import { Storage } from './resources/storage';
 import { Data } from './resources/data';
 import { DataSources } from './resources/dataSources';
 import { Workbenches } from './resources/workbenches';
+import { Operators } from './resources/operators';
 export { Data } from './resources/data';
 export type { DataListResult } from './resources/data';
 export { DataSources } from './resources/dataSources';
 export type { DataSourceListItem, DataSourceListPagination, DataSourceReadPayload, } from './resources/dataSources';
+export { Operators } from './resources/operators';
+export type { OperatorExecuteRequest, OperatorExecuteResponse } from './resources/operators';
 /**
  * GeniSpace SDK 主客户端
  */
@@ -24,6 +27,7 @@ export declare class GeniSpace {
     data: Data;
     dataSources: DataSources;
     workbenches: Workbenches;
+    operators: Operators;
     constructor(config: GeniSpaceConfig);
     /**
      * 更新 API Key
