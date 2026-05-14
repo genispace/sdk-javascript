@@ -209,6 +209,66 @@ export class BaseClient {
   }
 
   /**
+   * POST where successful responses return the full response JSON body (flat shape),
+   * e.g. `POST /operators/execute` returns `{ success, result, operator, executionTime, ... }` without a nested `data` field.
+   * Reuses the same axios instance, auth headers, retries on the error interceptor, and GeniSpaceError mapping.
+   */
+  protected async postJsonBody<T extends Record<string, unknown>>(
+    url: string,
+    body?: unknown,
+    config?: AxiosRequestConfig
+  ): Promise<T> {
+    try {
+      const response = await this.http.post(url, body, config);
+      const payload = response.data as Record<string, unknown> | null | undefined;
+
+      if (payload && typeof payload === 'object' && 'success' in payload && payload.success === false) {
+        const error = new GeniSpaceError(
+          (typeof payload.error === 'string' && payload.error) ||
+            (typeof payload.message === 'string' && payload.message) ||
+            '请求失败',
+          typeof payload.code === 'string' ? payload.code : undefined,
+          response.status
+        );
+        (error as any).responseData = payload;
+        throw error;
+      }
+
+      return (payload ?? {}) as T;
+    } catch (error: unknown) {
+      if (error instanceof GeniSpaceError) {
+        throw error;
+      }
+
+      const err = error as {
+        response?: { status?: number; data?: { error?: string; message?: string; code?: string } };
+        request?: unknown;
+        message?: string;
+      };
+
+      if (err.response) {
+        const d = err.response.data;
+        const geniSpaceError = new GeniSpaceError(
+          (typeof d?.error === 'string' && d.error) ||
+            (typeof d?.message === 'string' && d.message) ||
+            `HTTP ${err.response.status}: request failed`,
+          (typeof d?.code === 'string' && d.code) ||
+            (err.response.status != null ? `HTTP_${err.response.status}` : 'HTTP_ERROR'),
+          err.response.status
+        );
+        (geniSpaceError as any).responseData = d;
+        throw geniSpaceError;
+      }
+
+      if (err.request) {
+        throw new GeniSpaceError('网络请求失败', 'NETWORK_ERROR');
+      }
+
+      throw new GeniSpaceError(err.message || '未知错误', 'UNKNOWN_ERROR');
+    }
+  }
+
+  /**
    * 无认证的 POST 请求（用于验证API Key等公开接口）
    */
   protected async postWithoutAuth<T = any>(
