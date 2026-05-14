@@ -192,6 +192,51 @@ export interface TaskExecution {
 }
 
 /**
+ * 工作台（Workbench）
+ */
+export type WorkbenchStatus = 'ACTIVE' | 'INACTIVE' | 'DRAFT';
+
+export interface Workbench {
+  id: string;
+  name: string;
+  description?: string;
+  config: Record<string, unknown>;
+  teamId: string;
+  version: string | number;
+  status: WorkbenchStatus;
+  isActive: boolean;
+  createdBy: string;
+  updatedBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateWorkbenchRequest {
+  name: string;
+  description?: string;
+  status?: WorkbenchStatus;
+  config: Record<string, unknown>;
+}
+
+export interface UpdateWorkbenchRequest {
+  name?: string;
+  description?: string;
+  config?: Record<string, unknown>;
+  status?: WorkbenchStatus;
+  isActive?: boolean;
+}
+
+export interface WorkbenchVersion {
+  id: string;
+  version: string;
+  createdAt: string;
+  createdBy: string;
+  description?: string;
+  changes?: string;
+  config?: Record<string, unknown>;
+}
+
+/**
  * 错误类型
  */
 export class GeniSpaceError extends Error {

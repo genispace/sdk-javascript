@@ -6,6 +6,7 @@ import { Tasks } from './resources/tasks';
 import { Storage } from './resources/storage';
 import { Data } from './resources/data';
 import { DataSources } from './resources/dataSources';
+import { Workbenches } from './resources/workbenches';
 export { Data } from './resources/data';
 export type { DataListResult } from './resources/data';
 export { DataSources } from './resources/dataSources';
@@ -22,6 +23,7 @@ export declare class GeniSpace {
     storage: Storage;
     data: Data;
     dataSources: DataSources;
+    workbenches: Workbenches;
     constructor(config: GeniSpaceConfig);
     /**
      * 更新 API Key
