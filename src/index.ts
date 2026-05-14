@@ -6,6 +6,7 @@ import { Tasks } from './resources/tasks';
 import { Storage } from './resources/storage';
 import { Data } from './resources/data';
 import { DataSources } from './resources/dataSources';
+import { Workbenches } from './resources/workbenches';
 import { Operators } from './resources/operators';
 
 export { Data } from './resources/data';
@@ -32,6 +33,7 @@ export class GeniSpace {
   public storage: Storage;
   public data: Data;
   public dataSources: DataSources;
+  public workbenches: Workbenches;
   public operators: Operators;
 
   constructor(config: GeniSpaceConfig) {
@@ -45,6 +47,7 @@ export class GeniSpace {
     this.storage = new Storage(config);
     this.data = new Data(config);
     this.dataSources = new DataSources(config);
+    this.workbenches = new Workbenches(config);
     this.operators = new Operators(config);
   }
 
@@ -60,6 +63,7 @@ export class GeniSpace {
     this.storage.updateApiKey(apiKey);
     this.data.updateApiKey(apiKey);
     this.dataSources.updateApiKey(apiKey);
+    this.workbenches.updateApiKey(apiKey);
     this.operators.updateApiKey(apiKey);
   }
 
@@ -75,6 +79,7 @@ export class GeniSpace {
     this.storage.updateBaseURL(baseURL);
     this.data.updateBaseURL(baseURL);
     this.dataSources.updateBaseURL(baseURL);
+    this.workbenches.updateBaseURL(baseURL);
     this.operators.updateBaseURL(baseURL);
   }
 
@@ -90,6 +95,7 @@ export class GeniSpace {
     this.storage.updateAccessToken(accessToken);
     this.data.updateAccessToken(accessToken);
     this.dataSources.updateAccessToken(accessToken);
+    this.workbenches.updateAccessToken(accessToken);
     this.operators.updateAccessToken(accessToken);
   }
 

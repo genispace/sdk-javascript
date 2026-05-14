@@ -16,6 +16,7 @@ GeniSpace JavaScript SDK is the official client library for [GeniSpace.ai](https
 - 👤 **User Management** - Complete user profile and preference management
 - 🤖 **Agent Control** - Agent creation, configuration, execution, and session management
 - 📋 **Task Execution** - Task creation, scheduling, monitoring, and log management
+- 🧩 **Workbench** - Workbench CRUD, versioning, activation, and restore APIs
 - 🛡️ **Type Safety** - Complete TypeScript type definitions
 - 🔄 **Auto Retry** - Built-in network error retry mechanism
 - 📊 **Unified Error Handling** - Standardized error response handling
@@ -237,6 +238,50 @@ const taskStats = await client.tasks.getStatistics();
 
 // Delete task
 await client.tasks.deleteTask(task.id);
+```
+
+### Workbench Management (Workbenches)
+
+```javascript
+// List workbenches (team-scoped; permissions apply on server)
+const { items } = await client.workbenches.list({
+  page: 1,
+  limit: 20,
+  status: 'ACTIVE',
+  isActive: true
+});
+
+// Get detail
+const wb = await client.workbenches.getWorkbench(items[0].id);
+
+// Create
+const created = await client.workbenches.create({
+  name: 'Sales Dashboard',
+  description: 'Team KPI overview',
+  config: {
+    appConfig: { name: 'Sales Dashboard', version: '1.0.0' },
+    pages: {}
+  }
+});
+
+// Update
+await client.workbenches.updateWorkbench(created.id, {
+  name: 'Sales Dashboard v2',
+  config: created.config
+});
+
+// Toggle active
+await client.workbenches.setActive(created.id, true);
+
+// Versions & restore by version record id
+const versions = await client.workbenches.listVersions(created.id);
+await client.workbenches.restoreVersion(created.id, versions[0].id);
+
+// Alternate restore by version string when API exposes `/restore/:version`
+// await client.workbenches.restoreSnapshot(created.id, '1.0.0');
+
+// Delete (requires admin permission on server)
+await client.workbenches.deleteWorkbench(created.id);
 ```
 
 ## 🔐 Authentication and Security
