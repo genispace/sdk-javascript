@@ -6,6 +6,7 @@ import { Tasks } from './resources/tasks';
 import { Storage } from './resources/storage';
 import { Data } from './resources/data';
 import { DataSources } from './resources/dataSources';
+import { Operators } from './resources/operators';
 
 export { Data } from './resources/data';
 export type { DataListResult } from './resources/data';
@@ -15,6 +16,8 @@ export type {
   DataSourceListPagination,
   DataSourceReadPayload,
 } from './resources/dataSources';
+export { Operators } from './resources/operators';
+export type { OperatorExecuteRequest, OperatorExecuteResponse } from './resources/operators';
 
 /**
  * GeniSpace SDK 主客户端
@@ -29,6 +32,7 @@ export class GeniSpace {
   public storage: Storage;
   public data: Data;
   public dataSources: DataSources;
+  public operators: Operators;
 
   constructor(config: GeniSpaceConfig) {
     this.config = config;
@@ -41,6 +45,7 @@ export class GeniSpace {
     this.storage = new Storage(config);
     this.data = new Data(config);
     this.dataSources = new DataSources(config);
+    this.operators = new Operators(config);
   }
 
   /**
@@ -55,6 +60,7 @@ export class GeniSpace {
     this.storage.updateApiKey(apiKey);
     this.data.updateApiKey(apiKey);
     this.dataSources.updateApiKey(apiKey);
+    this.operators.updateApiKey(apiKey);
   }
 
   /**
@@ -69,6 +75,7 @@ export class GeniSpace {
     this.storage.updateBaseURL(baseURL);
     this.data.updateBaseURL(baseURL);
     this.dataSources.updateBaseURL(baseURL);
+    this.operators.updateBaseURL(baseURL);
   }
 
   /**
@@ -83,6 +90,7 @@ export class GeniSpace {
     this.storage.updateAccessToken(accessToken);
     this.data.updateAccessToken(accessToken);
     this.dataSources.updateAccessToken(accessToken);
+    this.operators.updateAccessToken(accessToken);
   }
 
   /**

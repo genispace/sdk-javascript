@@ -334,23 +334,36 @@ async function getAllTasks() {
 }
 ```
 
-## 🤝 Operator Service Integration
+## Operators (`POST /operators/execute`)
 
-GeniSpace SDK can be configured to communicate with custom operator services:
+Team-scoped **UserOperator** execution uses **`POST /operators/execute`**. The SDK exposes this as **`client.operators.execute(...)`**.
 
-```javascript
-// Configure operator service endpoint
-const operatorClient = new GeniSpace({
-  apiKey: process.env.GENISPACE_API_KEY,
-  baseURL: 'http://your-operator-service:8080' // Operator service address
+**Auth**: Bearer **`accessToken`** (GeniApp / browser) or **`apiKey`**, same as other resources. **`accessToken` takes precedence** when both are set.
+
+**`baseURL`**: Use the same API root as for `client.data` / `client.tasks` (typically includes the `/api` prefix, e.g. `https://api.genispace.ai/api`). The server also mounts routes at `/`, so a host-only `baseURL` can work if your deployment exposes `/operators/execute` at the root.
+
+**Request shape** (matches Console operator debugger):
+
+- `config.operatorId`: UserOperator **`identifier`** string for the current team (enabled clone).
+- `config.methodId`: optional method identifier; omit or pass the method’s identifier.
+- `inputs`: **required object** — use `{}` when the method has no inputs.
+- `context`: optional; the API enriches execution from the session (`teamId` / `userId`) server-side.
+
+**Response**: Flat JSON (`success`, `result`, `operator`, `executionTime`, …) — not wrapped in `{ data: ... }`.
+
+```typescript
+import GeniSpace from 'genispace';
+
+const client = new GeniSpace({
+  apiKey: process.env.GENISPACE_API_KEY!,
+  baseURL: 'https://api.genispace.ai/api',
 });
 
-// Use operator service APIs (depends on specific operator service interfaces)
-// For example, get operator information
-const operators = await operatorClient.get('/api/operators');
-
-// Operator services typically provide their own API specifications
-// Please refer to your operator service documentation for specific usage
+const out = await client.operators.execute({
+  config: { operatorId: 'my-team-operator-id', methodId: 'default' },
+  inputs: { query: 'example' },
+});
+console.log(out.result, out.executionTime);
 ```
 
 ## 📊 DataSources (team SQL READ)
