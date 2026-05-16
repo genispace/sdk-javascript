@@ -1,9 +1,17 @@
 import { BaseClient } from '../client/base';
-import { 
-  User, 
-  UserPreferences, 
-  UpdatePasswordRequest
+import {
+  User,
+  UserPreferences,
+  UpdatePasswordRequest,
+  PublicUserProfile,
 } from '../types';
+
+function unwrapData<T>(res: unknown): T {
+  if (res && typeof res === 'object' && 'data' in res) {
+    return (res as { data: T }).data;
+  }
+  return res as T;
+}
 
 /**
  * 用户管理资源
@@ -79,5 +87,30 @@ export class Users extends BaseClient {
     knowledgeBasesCount: number;
   }> {
     return this.get('/users/statistics');
+  }
+
+  /**
+   * Public profile for a user in the caller's active team (no password).
+   */
+  async getPublicProfile(userId: string): Promise<PublicUserProfile | null> {
+    try {
+      const res = await this.get<PublicUserProfile>(`/users/profiles/${encodeURIComponent(userId)}`);
+      return unwrapData<PublicUserProfile>(res);
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Batch public profiles for user ids in the caller's active team.
+   */
+  async getPublicProfiles(userIds: string[]): Promise<PublicUserProfile[]> {
+    const unique = [...new Set(userIds.filter(Boolean))];
+    if (!unique.length) return [];
+    const res = await this.post<{ profiles: PublicUserProfile[] }>('/users/profiles/batch', {
+      userIds: unique,
+    });
+    const data = unwrapData<{ profiles: PublicUserProfile[] }>(res);
+    return data?.profiles ?? [];
   }
 }

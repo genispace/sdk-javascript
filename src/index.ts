@@ -8,6 +8,7 @@ import { Data } from './resources/data';
 import { DataSources } from './resources/dataSources';
 import { Workbenches } from './resources/workbenches';
 import { Operators } from './resources/operators';
+import { Teams } from './resources/teams';
 
 export { Data } from './resources/data';
 export type { DataListResult } from './resources/data';
@@ -19,6 +20,7 @@ export type {
 } from './resources/dataSources';
 export { Operators } from './resources/operators';
 export type { OperatorExecuteRequest, OperatorExecuteResponse } from './resources/operators';
+export { Teams } from './resources/teams';
 
 /**
  * GeniSpace SDK 主客户端
@@ -35,6 +37,7 @@ export class GeniSpace {
   public dataSources: DataSources;
   public workbenches: Workbenches;
   public operators: Operators;
+  public teams: Teams;
 
   constructor(config: GeniSpaceConfig) {
     this.config = config;
@@ -49,6 +52,7 @@ export class GeniSpace {
     this.dataSources = new DataSources(config);
     this.workbenches = new Workbenches(config);
     this.operators = new Operators(config);
+    this.teams = new Teams(config);
   }
 
   /**
@@ -65,6 +69,7 @@ export class GeniSpace {
     this.dataSources.updateApiKey(apiKey);
     this.workbenches.updateApiKey(apiKey);
     this.operators.updateApiKey(apiKey);
+    this.teams.updateApiKey(apiKey);
   }
 
   /**
@@ -81,6 +86,7 @@ export class GeniSpace {
     this.dataSources.updateBaseURL(baseURL);
     this.workbenches.updateBaseURL(baseURL);
     this.operators.updateBaseURL(baseURL);
+    this.teams.updateBaseURL(baseURL);
   }
 
   /**
@@ -97,6 +103,7 @@ export class GeniSpace {
     this.dataSources.updateAccessToken(accessToken);
     this.workbenches.updateAccessToken(accessToken);
     this.operators.updateAccessToken(accessToken);
+    this.teams.updateAccessToken(accessToken);
   }
 
   /**

@@ -49,6 +49,15 @@ export interface UpdatePasswordRequest {
   newPassword: string;
 }
 
+/** Safe user fields for assignee display and member pickers (no password). */
+export interface PublicUserProfile {
+  id: string;
+  name: string;
+  email?: string;
+  avatarUrl?: string | null;
+  status?: string;
+}
+
 /**
  * API Key 相关类型
  */
