@@ -19,21 +19,21 @@ export declare class Users extends BaseClient {
         message: string;
     }>;
     /**
-     * 获取用户完整设置（teamId + preferences）
+     * 获取用户完整设置（spaceId + preferences）
      */
     getSettings(): Promise<{
-        teamId: string | null;
+        spaceId: string | null;
         preferences: UserPreferences;
     }>;
     /**
-     * 更新用户完整设置（teamId + preferences）
+     * 更新用户完整设置（spaceId + preferences）
      * 支持部分更新
      */
     updateSettings(data: Partial<{
-        teamId: string | null;
+        spaceId: string | null;
         preferences: Partial<UserPreferences>;
     }>): Promise<{
-        teamId: string | null;
+        spaceId: string | null;
         preferences: UserPreferences;
     }>;
     /**

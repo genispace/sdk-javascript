@@ -13,6 +13,11 @@ function unwrapData<T>(res: unknown): T {
   return res as T;
 }
 
+export interface UserSettings {
+  spaceId: string | null;
+  preferences: UserPreferences;
+}
+
 /**
  * 用户管理资源
  */
@@ -40,18 +45,18 @@ export class Users extends BaseClient {
   }
 
   /**
-   * 获取用户完整设置（teamId + preferences）
+   * 获取用户完整设置（spaceId + preferences）
    */
-  async getSettings(): Promise<{ teamId: string | null; preferences: UserPreferences }> {
-    return this.get<{ teamId: string | null; preferences: UserPreferences }>('/users/me/settings');
+  async getSettings(): Promise<UserSettings> {
+    return this.get<UserSettings>('/users/me/settings');
   }
 
   /**
-   * 更新用户完整设置（teamId + preferences）
+   * 更新用户完整设置（spaceId + preferences）
    * 支持部分更新
    */
-  async updateSettings(data: Partial<{ teamId: string | null; preferences: Partial<UserPreferences> }>): Promise<{ teamId: string | null; preferences: UserPreferences }> {
-    return this.put<{ teamId: string | null; preferences: UserPreferences }>('/users/me/settings', data);
+  async updateSettings(data: Partial<{ spaceId: string | null; preferences: Partial<UserPreferences> }>): Promise<UserSettings> {
+    return this.put<UserSettings>('/users/me/settings', data);
   }
 
   /**
@@ -62,7 +67,19 @@ export class Users extends BaseClient {
   }
 
   /**
-   * 获取用户的团队列表
+   * 获取用户的空间列表
+   */
+  async getSpaces(): Promise<Array<{
+    id: string;
+    name: string;
+    role: string;
+    isActive: boolean;
+  }>> {
+    return this.get('/users/teams');
+  }
+
+  /**
+   * @deprecated Use {@link getSpaces} instead.
    */
   async getTeams(): Promise<Array<{
     id: string;
@@ -70,7 +87,7 @@ export class Users extends BaseClient {
     role: string;
     isActive: boolean;
   }>> {
-    return this.get('/users/teams');
+    return this.getSpaces();
   }
 
   /**
@@ -83,14 +100,13 @@ export class Users extends BaseClient {
     activeWorkflows: number;
     agentsCount: number;
     operatorsCount: number;
-    teamsCount: number;
-    knowledgeBasesCount: number;
+    spacesCount: number;
   }> {
     return this.get('/users/statistics');
   }
 
   /**
-   * Public profile for a user in the caller's active team (no password).
+   * Public profile for a user in the caller's active space (no password).
    */
   async getPublicProfile(userId: string): Promise<PublicUserProfile | null> {
     try {
@@ -102,7 +118,7 @@ export class Users extends BaseClient {
   }
 
   /**
-   * Batch public profiles for user ids in the caller's active team.
+   * Batch public profiles for user ids in the caller's active space.
    */
   async getPublicProfiles(userIds: string[]): Promise<PublicUserProfile[]> {
     const unique = [...new Set(userIds.filter(Boolean))];
