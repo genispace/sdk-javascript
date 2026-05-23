@@ -8,6 +8,7 @@ import { Data } from './resources/data';
 import { DataSources } from './resources/dataSources';
 import { Workbenches } from './resources/workbenches';
 import { Operators } from './resources/operators';
+import { Spaces } from './resources/spaces';
 import { Teams } from './resources/teams';
 
 export { Data } from './resources/data';
@@ -20,6 +21,8 @@ export type {
 } from './resources/dataSources';
 export { Operators } from './resources/operators';
 export type { OperatorExecuteRequest, OperatorExecuteResponse } from './resources/operators';
+export { Spaces } from './resources/spaces';
+/** @deprecated Use {@link Spaces} instead. */
 export { Teams } from './resources/teams';
 
 /**
@@ -37,7 +40,12 @@ export class GeniSpace {
   public dataSources: DataSources;
   public workbenches: Workbenches;
   public operators: Operators;
-  public teams: Teams;
+  public spaces: Spaces;
+
+  /** @deprecated Use {@link spaces} instead. */
+  public get teams(): Spaces {
+    return this.spaces;
+  }
 
   constructor(config: GeniSpaceConfig) {
     this.config = config;
@@ -52,7 +60,7 @@ export class GeniSpace {
     this.dataSources = new DataSources(config);
     this.workbenches = new Workbenches(config);
     this.operators = new Operators(config);
-    this.teams = new Teams(config);
+    this.spaces = new Spaces(config);
   }
 
   /**
@@ -69,7 +77,7 @@ export class GeniSpace {
     this.dataSources.updateApiKey(apiKey);
     this.workbenches.updateApiKey(apiKey);
     this.operators.updateApiKey(apiKey);
-    this.teams.updateApiKey(apiKey);
+    this.spaces.updateApiKey(apiKey);
   }
 
   /**
@@ -86,7 +94,7 @@ export class GeniSpace {
     this.dataSources.updateBaseURL(baseURL);
     this.workbenches.updateBaseURL(baseURL);
     this.operators.updateBaseURL(baseURL);
-    this.teams.updateBaseURL(baseURL);
+    this.spaces.updateBaseURL(baseURL);
   }
 
   /**
@@ -103,7 +111,7 @@ export class GeniSpace {
     this.dataSources.updateAccessToken(accessToken);
     this.workbenches.updateAccessToken(accessToken);
     this.operators.updateAccessToken(accessToken);
-    this.teams.updateAccessToken(accessToken);
+    this.spaces.updateAccessToken(accessToken);
   }
 
   /**

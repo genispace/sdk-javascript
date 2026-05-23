@@ -15,7 +15,7 @@ export interface DataListResult<T = Record<string, unknown>> {
 
 /**
  * Allowlisted PostgreSQL table access (`data/tables.json`); `dataScope` matches the enabled GeniApp `identifier`.
- * Requests target the team database implied by the token; filters apply to business columns declared in the contract.
+ * Requests target the space database implied by the token; filters apply to business columns declared in the contract.
  */
 export class Data extends BaseClient {
   constructor(config: GeniSpaceConfig) {
