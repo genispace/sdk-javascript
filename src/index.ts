@@ -9,7 +9,6 @@ import { DataSources } from './resources/dataSources';
 import { Workbenches } from './resources/workbenches';
 import { Operators } from './resources/operators';
 import { Spaces } from './resources/spaces';
-import { Teams } from './resources/teams';
 
 export { Data } from './resources/data';
 export type { DataListResult } from './resources/data';
