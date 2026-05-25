@@ -1,5 +1,5 @@
 import { BaseClient } from '../client/base';
-import { Workbench, CreateWorkbenchRequest, UpdateWorkbenchRequest, WorkbenchVersion } from '../types';
+import { Workbench, WorkbenchOverview, CreateWorkbenchRequest, UpdateWorkbenchRequest, WorkbenchVersion } from '../types';
 /**
  * 工作台资源（`/workbenches`）
  */
@@ -19,6 +19,10 @@ export declare class Workbenches extends BaseClient {
      * 获取工作台详情
      */
     getWorkbench(workbenchId: string): Promise<Workbench>;
+    /**
+     * 获取工作台概览（`GET /workbenches/:id/overview`）
+     */
+    getOverview(workbenchId: string): Promise<WorkbenchOverview>;
     /**
      * 创建工作台
      */
