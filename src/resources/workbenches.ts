@@ -2,6 +2,7 @@ import { BaseClient } from '../client/base';
 import {
   GeniSpaceError,
   Workbench,
+  WorkbenchOverview,
   CreateWorkbenchRequest,
   UpdateWorkbenchRequest,
   WorkbenchVersion,
@@ -66,6 +67,30 @@ export class Workbenches extends BaseClient {
     }
 
     throw new GeniSpaceError('响应缺少工作台数据', 'INVALID_RESPONSE');
+  }
+
+  /**
+   * 获取工作台概览（`GET /workbenches/:id/overview`）
+   * 返回导航树与未关联页面摘要，不含完整 config，适用于第三方客户端。
+   */
+  async getOverview(workbenchId: string): Promise<WorkbenchOverview> {
+    const res = await this.http.get<{
+      success?: boolean;
+      data?: WorkbenchOverview;
+      message?: string;
+      code?: string;
+    }>(`/workbenches/${encodeId(workbenchId)}/overview`);
+    const body = res.data;
+
+    if (typeof body === 'object' && body !== null && 'success' in body && body.success === false) {
+      throw new GeniSpaceError(body.message || '获取工作台概览失败', body.code);
+    }
+
+    if (body && typeof body === 'object' && 'data' in body && body.data) {
+      return body.data;
+    }
+
+    throw new GeniSpaceError('响应缺少工作台概览数据', 'INVALID_RESPONSE');
   }
 
   /**

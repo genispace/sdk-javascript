@@ -245,6 +245,65 @@ export interface WorkbenchVersion {
   config?: Record<string, unknown>;
 }
 
+/** 工作台概览中的数据源引用类型 */
+export type WorkbenchOverviewDataSourceType = 'dataset' | 'database-datasource';
+
+/** 工作台概览中的数据源摘要 */
+export interface WorkbenchOverviewDataSource {
+  type: WorkbenchOverviewDataSourceType;
+  id: string;
+  name?: string;
+}
+
+/** 工作台概览中的组件操作摘要 */
+export interface WorkbenchOverviewAction {
+  id?: string;
+  label?: string;
+  position?: string;
+  operationType: string;
+  dataSource: WorkbenchOverviewDataSource | WorkbenchOverviewDataSource[];
+}
+
+/** 工作台概览中的组件树节点 */
+export interface WorkbenchOverviewComponent {
+  id: string;
+  type: string;
+  title?: string;
+  dataSource?: WorkbenchOverviewDataSource;
+  dataSources?: WorkbenchOverviewDataSource[];
+  actions?: WorkbenchOverviewAction[];
+  children?: WorkbenchOverviewComponent[];
+}
+
+/** 工作台概览中的页面摘要 */
+export interface WorkbenchOverviewPage {
+  key: string;
+  title: string;
+  description?: string;
+  components: WorkbenchOverviewComponent[];
+}
+
+/** 工作台概览中的导航树节点 */
+export interface WorkbenchOverviewNavigationItem {
+  key: string;
+  title: string;
+  path?: string;
+  page?: WorkbenchOverviewPage;
+  children?: WorkbenchOverviewNavigationItem[];
+}
+
+/**
+ * 工作台概览（树形结构，不含完整 config，供第三方客户端如移动端壳使用）
+ */
+export interface WorkbenchOverview {
+  id: string;
+  name: string;
+  description?: string;
+  status: WorkbenchStatus;
+  navigation: WorkbenchOverviewNavigationItem[];
+  unlinkedPages?: WorkbenchOverviewPage[];
+}
+
 /**
  * 错误类型
  */
