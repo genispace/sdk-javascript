@@ -85,7 +85,7 @@ export class Agents extends BaseClient {
     sessionId: string;
     agentId: string;
     userId: string;
-    teamId: string;
+    spaceId: string;
     title: string;
     status: string;
     createdAt: string;
@@ -97,7 +97,7 @@ export class Agents extends BaseClient {
    * 获取用户的智能体会话列表
    */
   async getSessions(params?: PaginationParams & {
-    teamId?: string;
+    spaceId?: string;
     userAgentId?: string;
     agentType?: 'CHAT' | 'ASSISTANT';
     status?: 'ACTIVE' | 'COMPLETED' | 'FAILED';
