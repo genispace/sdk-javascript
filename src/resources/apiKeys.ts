@@ -54,21 +54,21 @@ export class ApiKeys extends BaseClient {
    * 获取空间的所有 API 密钥
    */
   async listSpaceKeys(spaceId: string): Promise<ApiKey[]> {
-    return this.get<ApiKey[]>(`/api-keys/teams/${spaceId}`);
+    return this.get<ApiKey[]>(`/api-keys/spaces/${spaceId}`);
   }
 
   /**
    * 获取空间成员的 API 密钥
    */
   async listMemberKeys(spaceId: string, memberId: string): Promise<ApiKey[]> {
-    return this.get<ApiKey[]>(`/api-keys/teams/${spaceId}/members/${memberId}`);
+    return this.get<ApiKey[]>(`/api-keys/spaces/${spaceId}/members/${memberId}`);
   }
 
   /**
    * 空间管理员撤销成员的 API 密钥
    */
   async revokeMemberKey(spaceId: string, memberId: string, keyId: string): Promise<ApiKey> {
-    return this.post<ApiKey>(`/api-keys/teams/${spaceId}/members/${memberId}/${keyId}/revoke`);
+    return this.post<ApiKey>(`/api-keys/spaces/${spaceId}/members/${memberId}/${keyId}/revoke`);
   }
 
   /**
