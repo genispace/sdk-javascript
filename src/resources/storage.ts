@@ -72,9 +72,37 @@ export class Storage extends BaseClient {
       fileName?: string;
     }
   ): Promise<StorageFile> {
-    const FormData = require('form-data');
-    const formData = new FormData();
-    
+    const isBrowserBlob =
+      typeof Blob !== 'undefined' &&
+      file instanceof Blob;
+
+    if (isBrowserBlob) {
+      const browserForm = new FormData();
+      const fileName =
+        options?.fileName ||
+        (file instanceof File ? file.name : 'file');
+      browserForm.append('file', file, fileName);
+      if (options?.folderId) {
+        browserForm.append('folderId', options.folderId);
+      }
+      if (options?.folderPath) {
+        browserForm.append('path', options.folderPath);
+      }
+      const response = await this.post<{ data: StorageFile }>(
+        '/storage/files/upload',
+        browserForm,
+        {
+          timeout: 300000,
+          maxContentLength: Infinity,
+          maxBodyLength: Infinity,
+        }
+      );
+      return (response as any).data || (response as any);
+    }
+
+    const NodeFormData = require('form-data');
+    const formData = new NodeFormData();
+
     // 处理文件对象
     if (file && typeof file === 'object') {
       // Node.js 环境：可能是文件路径或流
