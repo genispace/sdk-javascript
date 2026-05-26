@@ -75,7 +75,7 @@ export class Users extends BaseClient {
     role: string;
     isActive: boolean;
   }>> {
-    return this.get('/users/teams');
+    return this.get('/users/spaces');
   }
 
   /**
