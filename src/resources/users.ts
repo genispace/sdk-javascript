@@ -79,18 +79,6 @@ export class Users extends BaseClient {
   }
 
   /**
-   * @deprecated Use {@link getSpaces} instead.
-   */
-  async getTeams(): Promise<Array<{
-    id: string;
-    name: string;
-    role: string;
-    isActive: boolean;
-  }>> {
-    return this.getSpaces();
-  }
-
-  /**
    * 获取用户统计信息
    */
   async getStatistics(): Promise<{

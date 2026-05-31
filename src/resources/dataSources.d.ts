@@ -19,6 +19,15 @@ export interface DataSourceListPagination {
     total?: number;
     totalPages?: number;
 }
+/** Payload returned inside `data` for write operations (`POST /datasources/:id/data`). */
+export interface DataSourceOperationResult {
+    operationType?: string;
+    affectedRows?: number;
+    insertId?: number | string;
+    executionTime?: number;
+    statementCount?: number;
+    [key: string]: unknown;
+}
 /** Payload returned inside `data` for `GET /datasources/:id/data` (READ). */
 export interface DataSourceReadPayload {
     data: Record<string, unknown>[];
@@ -63,4 +72,8 @@ export declare class DataSources extends BaseClient {
         page?: number;
         limit?: number;
     }): Promise<DataSourceReadPayload>;
+    /**
+     * Execute a datasource write operation (TRANSACTION, CREATE, UPDATE, DELETE, BATCH_INSERT).
+     */
+    executeDataSourceOperation(datasourceId: string, inputData: Record<string, string | number | boolean | null | undefined>): Promise<DataSourceOperationResult>;
 }

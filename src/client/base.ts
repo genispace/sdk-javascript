@@ -12,8 +12,14 @@ function bearerFromConfig(config: GeniSpaceConfig): string {
 }
 
 /** True when `document` exists (browser). SDK `lib` has no DOM types — use `globalThis`, not `window`. */
-function isBrowserEnvironment(): boolean {
+export function isBrowserEnvironment(): boolean {
   return typeof (globalThis as { document?: unknown }).document !== 'undefined';
+}
+
+function isFormDataLike(data: unknown): boolean {
+  if (!data || typeof data !== 'object') return false;
+  if (typeof FormData !== 'undefined' && data instanceof FormData) return true;
+  return Object.prototype.toString.call(data) === '[object FormData]';
 }
 
 /** Browsers refuse `User-Agent` on XHR/fetch (axios uses XHR in the browser). Keep it for Node. */
@@ -65,6 +71,9 @@ export class BaseClient {
         const token = bearerFromConfig(this.config);
         if (reqConfig.headers) {
           (reqConfig.headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
+        }
+        if (isFormDataLike(reqConfig.data) && reqConfig.headers) {
+          delete (reqConfig.headers as Record<string, unknown>)['Content-Type'];
         }
         return reqConfig;
       },

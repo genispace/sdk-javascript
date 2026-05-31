@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.0.0] - 2026-05-31
+
+### Breaking Changes — Phase 7 compat removal
+
+Legacy Team APIs removed after the API compatibility window closed.
+
+- **Removed** `client.teams` getter and `Teams` export — use **`client.spaces`** / **`Spaces`** only.
+- **Removed** `users.getTeams()` — use **`users.getSpaces()`** (`GET /users/spaces`).
+- **Removed** `apiKeys.listTeamKeys()` — use **`apiKeys.listSpaceKeys(spaceId)`** (`GET /api-keys/spaces/:spaceId`).
+- API no longer serves `/teams/*`, `/users/teams`, or `/users/switch-team/*` (404).
+
+### Migration
+
+```typescript
+// Before (2.x deprecated aliases)
+const list = await client.users.getTeams();
+const keys = await client.apiKeys.listTeamKeys(spaceId);
+
+// After (3.x)
+const list = await client.users.getSpaces();
+const keys = await client.apiKeys.listSpaceKeys(spaceId);
+```
+
 ## [2.0.0] - 2026-05-23
 
 ### Breaking Changes — Team → Space rename
