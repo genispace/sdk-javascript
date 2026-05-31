@@ -104,7 +104,7 @@ await client.users.updatePreferences({
 });
 
 // Get user teams
-const teams = await client.users.getTeams();
+const spaces = await client.users.getSpaces();
 
 // Get user statistics
 const stats = await client.users.getStatistics();
@@ -417,7 +417,7 @@ Team-scoped SQL DataSources use **`GET /datasources`** and **`GET /datasources/:
 
 **Permission**: **`team.datasource.read`** (Bearer token — same auth as the rest of the platform API).
 
-**Typical GeniApp flow**
+**Typical GeniApp flow** (product name; API fields `managedByGeniapp` / `geniappIdentifier` are L2 contract names)
 
 1. After install, managed seeds are upserted with `metadata.managedByGeniapp` and `metadata.geniappIdentifier` matching the app (e.g. `hr-timesheet`).
 2. List datasources with `limit` high enough to include seeds, then pick the row where `identifier` matches your seed key (e.g. `hr_ts_submitted_by_project`).

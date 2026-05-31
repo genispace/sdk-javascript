@@ -43,9 +43,9 @@ export declare class Users extends BaseClient {
         message: string;
     }>;
     /**
-     * 获取用户的团队列表
+     * 获取用户的空间列表
      */
-    getTeams(): Promise<Array<{
+    getSpaces(): Promise<Array<{
         id: string;
         name: string;
         role: string;
@@ -61,7 +61,7 @@ export declare class Users extends BaseClient {
         activeWorkflows: number;
         agentsCount: number;
         operatorsCount: number;
-        teamsCount: number;
+        spacesCount: number;
         knowledgeBasesCount: number;
     }>;
 }

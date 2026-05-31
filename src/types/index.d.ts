@@ -184,7 +184,7 @@ export interface Workbench {
     name: string;
     description?: string;
     config: Record<string, unknown>;
-    teamId: string;
+    spaceId: string;
     version: string | number;
     status: WorkbenchStatus;
     isActive: boolean;

@@ -80,9 +80,9 @@ export declare class Storage extends BaseClient {
     /**
      * 获取文件内容（用于私有存储桶）
      * @param fileId - 文件ID
-     * @returns 文件内容 Buffer
+     * @returns 文件二进制（浏览器 ArrayBuffer，Node Buffer）
      */
-    getFileContent(fileId: string): Promise<Buffer>;
+    getFileContent(fileId: string): Promise<ArrayBuffer | Buffer>;
     /**
      * 删除文件
      * @param fileId - 文件ID

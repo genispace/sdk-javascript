@@ -72,13 +72,6 @@ export class ApiKeys extends BaseClient {
   }
 
   /**
-   * @deprecated Use {@link listSpaceKeys} instead.
-   */
-  async listTeamKeys(teamId: string): Promise<ApiKey[]> {
-    return this.listSpaceKeys(teamId);
-  }
-
-  /**
    * 验证 API 密钥有效性
    */
   async validate(apiKey: string): Promise<{
