@@ -181,7 +181,7 @@ export class Storage extends BaseClient {
    */
   async getFile(fileId: string): Promise<StorageFile> {
     const response = await this.get<{ data: StorageFile }>(`/storage/files/${fileId}`);
-    return (response as { data?: StorageFile }).data ?? (response as StorageFile);
+    return (response as { data?: StorageFile }).data ?? (response as unknown as StorageFile);
   }
 
   /**
@@ -196,7 +196,7 @@ export class Storage extends BaseClient {
       responseType: 'arraybuffer',
     });
     const data = response.data;
-    if (typeof Buffer !== 'undefined' && typeof window === 'undefined') {
+    if (!isBrowserEnvironment() && typeof Buffer !== 'undefined') {
       return Buffer.from(data);
     }
     return data;
