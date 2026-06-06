@@ -17,6 +17,8 @@ export type {
   DataSourceListItem,
   DataSourceListPagination,
   DataSourceReadPayload,
+  GenerateOutputSchemaOptions,
+  GenerateOutputSchemaResult,
 } from './resources/dataSources';
 export { Operators } from './resources/operators';
 export type { OperatorExecuteRequest, OperatorExecuteResponse } from './resources/operators';
