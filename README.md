@@ -444,6 +444,21 @@ const result = await client.dataSources.queryDataSourceRead(row.id, { limit: 100
 console.log(result.data);
 ```
 
+Generate or refresh OutputSchema without manually providing required SQL parameters:
+
+```typescript
+const schemaResult = await client.dataSources.generateOutputSchema(row.id, {
+  parameters: {},
+  strict: false,
+  save: true,
+  baseDate: '2026-06-06',
+});
+
+console.log(schemaResult.columns);
+console.log(schemaResult.outputSchema);
+console.log(schemaResult.usedParameters);
+```
+
 ## 📖 Example Usage
 
 See the complete usage example in [example-usage.js](example-usage.js) which demonstrates:

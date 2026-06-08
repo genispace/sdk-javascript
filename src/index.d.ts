@@ -11,7 +11,7 @@ import { Operators } from './resources/operators';
 export { Data } from './resources/data';
 export type { DataListResult } from './resources/data';
 export { DataSources } from './resources/dataSources';
-export type { DataSourceListItem, DataSourceListPagination, DataSourceReadPayload, } from './resources/dataSources';
+export type { DataSourceListItem, DataSourceListPagination, DataSourceReadPayload, GenerateOutputSchemaOptions, GenerateOutputSchemaResult, } from './resources/dataSources';
 export { Operators } from './resources/operators';
 export type { OperatorExecuteRequest, OperatorExecuteResponse } from './resources/operators';
 /**
