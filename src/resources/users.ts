@@ -75,19 +75,7 @@ export class Users extends BaseClient {
     role: string;
     isActive: boolean;
   }>> {
-    return this.get('/users/teams');
-  }
-
-  /**
-   * @deprecated Use {@link getSpaces} instead.
-   */
-  async getTeams(): Promise<Array<{
-    id: string;
-    name: string;
-    role: string;
-    isActive: boolean;
-  }>> {
-    return this.getSpaces();
+    return this.get('/users/spaces');
   }
 
   /**

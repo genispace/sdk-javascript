@@ -30,17 +30,17 @@ export declare class ApiKeys extends BaseClient {
      */
     revoke(keyId: string): Promise<ApiKey>;
     /**
-     * 获取团队的所有 API 密钥
+     * 获取空间的所有 API 密钥
      */
-    listTeamKeys(teamId: string): Promise<ApiKey[]>;
+    listSpaceKeys(spaceId: string): Promise<ApiKey[]>;
     /**
-     * 获取团队成员的 API 密钥
+     * 获取空间成员的 API 密钥
      */
-    listMemberKeys(teamId: string, memberId: string): Promise<ApiKey[]>;
+    listMemberKeys(spaceId: string, memberId: string): Promise<ApiKey[]>;
     /**
-     * 团队管理员撤销成员的 API 密钥
+     * 空间管理员撤销成员的 API 密钥
      */
-    revokeMemberKey(teamId: string, memberId: string, keyId: string): Promise<ApiKey>;
+    revokeMemberKey(spaceId: string, memberId: string, keyId: string): Promise<ApiKey>;
     /**
      * 验证 API 密钥有效性
      */

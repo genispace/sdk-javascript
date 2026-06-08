@@ -1,4 +1,4 @@
-import { BaseClient } from '../client/base';
+import { BaseClient, isBrowserEnvironment } from '../client/base';
 import { 
   PaginationParams,
   GeniSpacePaginationResponse 
@@ -53,6 +53,17 @@ export interface FileListResponse {
 }
 
 /**
+ * Detect File/Blob across Vite prebundle / iframe realm boundaries (`instanceof` alone may fail).
+ */
+function isBrowserUploadFile(file: unknown): file is Blob {
+  if (!file || typeof file !== 'object') return false;
+  const tag = Object.prototype.toString.call(file);
+  if (tag === '[object File]' || tag === '[object Blob]') return true;
+  if (typeof Blob !== 'undefined' && file instanceof Blob) return true;
+  return false;
+}
+
+/**
  * 存储管理资源
  */
 export class Storage extends BaseClient {
@@ -72,9 +83,38 @@ export class Storage extends BaseClient {
       fileName?: string;
     }
   ): Promise<StorageFile> {
-    const FormData = require('form-data');
-    const formData = new FormData();
-    
+    if (isBrowserEnvironment()) {
+      if (!isBrowserUploadFile(file)) {
+        throw new Error('Invalid file object');
+      }
+      const browserForm = new FormData();
+      const fileName =
+        options?.fileName ||
+        (Object.prototype.toString.call(file) === '[object File]'
+          ? (file as File).name
+          : 'file');
+      browserForm.append('file', file, fileName);
+      if (options?.folderId) {
+        browserForm.append('folderId', options.folderId);
+      }
+      if (options?.folderPath) {
+        browserForm.append('path', options.folderPath);
+      }
+      const response = await this.post<{ data: StorageFile }>(
+        '/storage/files/upload',
+        browserForm,
+        {
+          timeout: 300000,
+          maxContentLength: Infinity,
+          maxBodyLength: Infinity,
+        }
+      );
+      return (response as any).data || (response as any);
+    }
+
+    const NodeFormData = require('form-data');
+    const formData = new NodeFormData();
+
     // 处理文件对象
     if (file && typeof file === 'object') {
       // Node.js 环境：可能是文件路径或流
@@ -140,21 +180,26 @@ export class Storage extends BaseClient {
    * @returns 文件信息
    */
   async getFile(fileId: string): Promise<StorageFile> {
-    return this.get<StorageFile>(`/storage/files/${fileId}`);
+    const response = await this.get<{ data: StorageFile }>(`/storage/files/${fileId}`);
+    return (response as { data?: StorageFile }).data ?? (response as unknown as StorageFile);
   }
 
   /**
    * 获取文件内容（用于私有存储桶）
    * @param fileId - 文件ID
-   * @returns 文件内容 Buffer
+   * @returns 文件二进制（浏览器为 ArrayBuffer，Node 为 Buffer）
    */
-  async getFileContent(fileId: string): Promise<Buffer> {
-    const response = await this.request<Buffer>({
+  async getFileContent(fileId: string): Promise<ArrayBuffer | Buffer> {
+    const response = await this.request<ArrayBuffer>({
       method: 'GET',
       url: `/storage/files/${fileId}/content`,
-      responseType: 'arraybuffer'
+      responseType: 'arraybuffer',
     });
-    return Buffer.from(response.data);
+    const data = response.data;
+    if (!isBrowserEnvironment() && typeof Buffer !== 'undefined') {
+      return Buffer.from(data);
+    }
+    return data;
   }
 
   /**

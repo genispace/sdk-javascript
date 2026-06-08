@@ -23,8 +23,6 @@ export type {
 export { Operators } from './resources/operators';
 export type { OperatorExecuteRequest, OperatorExecuteResponse } from './resources/operators';
 export { Spaces } from './resources/spaces';
-/** @deprecated Use {@link Spaces} instead. */
-export { Teams } from './resources/teams';
 
 /**
  * GeniSpace SDK 主客户端
@@ -42,11 +40,6 @@ export class GeniSpace {
   public workbenches: Workbenches;
   public operators: Operators;
   public spaces: Spaces;
-
-  /** @deprecated Use {@link spaces} instead. */
-  public get teams(): Spaces {
-    return this.spaces;
-  }
 
   constructor(config: GeniSpaceConfig) {
     this.config = config;
