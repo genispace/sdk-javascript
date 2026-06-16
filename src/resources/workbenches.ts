@@ -3,7 +3,6 @@ import {
   GeniSpaceError,
   Workbench,
   WorkbenchOverview,
-  CreateWorkbenchRequest,
   UpdateWorkbenchRequest,
   WorkbenchVersion,
 } from '../types';
@@ -93,13 +92,8 @@ export class Workbenches extends BaseClient {
     throw new GeniSpaceError('响应缺少工作台概览数据', 'INVALID_RESPONSE');
   }
 
-  /**
-   * 创建工作台
-   */
-  async create(data: CreateWorkbenchRequest): Promise<Workbench> {
-    const res = await this.http.post<Record<string, unknown>>('/workbenches', data);
-    return this.parseWorkbenchBody(res.data, '创建工作台失败');
-  }
+  // 工作台不能被直接创建：请改用应用创建接口 `POST /applications/create`
+  // （`type: "WORKBENCH"`），它会同时创建工作台及其应用入口、导航与成员访问权限。
 
   /**
    * 更新工作台

@@ -220,13 +220,6 @@ export interface Workbench {
   updatedAt: string;
 }
 
-export interface CreateWorkbenchRequest {
-  name: string;
-  description?: string;
-  status?: WorkbenchStatus;
-  config: Record<string, unknown>;
-}
-
 export interface UpdateWorkbenchRequest {
   name?: string;
   description?: string;
