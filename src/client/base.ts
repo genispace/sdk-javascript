@@ -140,13 +140,9 @@ export class BaseClient {
 
     // 返回标准化响应格式，支持不同的API响应格式
     if (hasSuccess) {
-      // 标准API响应格式
+      // 标准API响应格式（保留 pagination 等其他顶级字段）
       return {
-        success: response.data.success,
-        data: response.data.data,
-        error: response.data.error,
-        code: response.data.code,
-        message: response.data.message,
+        ...response.data,
         timestamp: response.data.timestamp || new Date().toISOString()
       } as any;
     } else {
@@ -182,13 +178,9 @@ export class BaseClient {
 
       // 返回标准化响应格式，支持不同的API响应格式
       if (hasSuccess) {
-        // 标准API响应格式
+        // 标准API响应格式（保留 pagination 等其他顶级字段）
         return {
-          success: response.data.success,
-          data: response.data.data,
-          error: response.data.error,
-          code: response.data.code,
-          message: response.data.message,
+          ...response.data,
           timestamp: response.data.timestamp || new Date().toISOString()
         } as any;
       } else {
@@ -302,36 +294,49 @@ export class BaseClient {
       }
     });
 
-    const response = await httpWithoutAuth.post<GeniSpaceResponse<T>>(url, data, config);
-    
-    // 对于验证接口，总是返回响应数据（无论成功还是失败）
-    if (url.includes('/validate/')) {
+    try {
+      const response = await httpWithoutAuth.post<GeniSpaceResponse<T>>(url, data, config);
+
+      // 对于验证接口，总是返回响应数据（无论成功还是失败）
+      if (url.includes('/validate/')) {
+        return {
+          ...response.data,
+          timestamp: response.data.timestamp || new Date().toISOString()
+        } as any;
+      }
+
+      if (!response.data.success) {
+        throw new GeniSpaceError(
+          response.data.error || '请求失败',
+          response.data.code
+        );
+      }
+
+      // 返回标准化响应格式，保持平台API的完整响应结构（保留 pagination 等其他顶级字段）
       return {
-        success: response.data.success,
-        data: response.data.data,
-        error: response.data.error,
-        code: response.data.code,
-        message: response.data.message,
+        ...response.data,
         timestamp: response.data.timestamp || new Date().toISOString()
       } as any;
-    }
-    
-    if (!response.data.success) {
-      throw new GeniSpaceError(
-        response.data.error || '请求失败',
-        response.data.code
-      );
-    }
+    } catch (error: any) {
+      if (error instanceof GeniSpaceError) {
+        throw error;
+      }
 
-    // 返回标准化响应格式，保持平台API的完整响应结构
-    return {
-      success: response.data.success,
-      data: response.data.data,
-      error: response.data.error,
-      code: response.data.code,
-      message: response.data.message,
-      timestamp: response.data.timestamp || new Date().toISOString()
-    } as any;
+      // Axios错误处理
+      if (error.response) {
+        const geniSpaceError = new GeniSpaceError(
+          error.response.data?.error || error.response.data?.message || `HTTP ${error.response.status}: ${error.response.statusText}`,
+          error.response.data?.code || `HTTP_${error.response.status}`
+        );
+        (geniSpaceError as any).statusCode = error.response.status;
+        (geniSpaceError as any).responseData = error.response.data;
+        throw geniSpaceError;
+      } else if (error.request) {
+        throw new GeniSpaceError('网络请求失败', 'NETWORK_ERROR');
+      } else {
+        throw new GeniSpaceError(error.message || '未知错误', 'UNKNOWN_ERROR');
+      }
+    }
   }
 
   /**
@@ -351,13 +356,9 @@ export class BaseClient {
       );
     }
 
-    // 返回标准化响应格式，保持平台API的完整响应结构
+    // 返回标准化响应格式，保持平台API的完整响应结构（保留 pagination 等其他顶级字段）
     return {
-      success: response.data.success,
-      data: response.data.data,
-      error: response.data.error,
-      code: response.data.code,
-      message: response.data.message,
+      ...response.data,
       timestamp: response.data.timestamp || new Date().toISOString()
     } as any;
   }
@@ -385,11 +386,7 @@ export class BaseClient {
 
     if (typeof body === 'object' && 'success' in body) {
       return {
-        success: body.success,
-        data: body.data,
-        error: body.error,
-        code: body.code,
-        message: body.message,
+        ...body,
         timestamp: body.timestamp || new Date().toISOString()
       } as any;
     }
@@ -414,13 +411,9 @@ export class BaseClient {
       );
     }
 
-    // 返回标准化响应格式，保持平台API的完整响应结构
+    // 返回标准化响应格式，保持平台API的完整响应结构（保留 pagination 等其他顶级字段）
     return {
-      success: response.data.success,
-      data: response.data.data,
-      error: response.data.error,
-      code: response.data.code,
-      message: response.data.message,
+      ...response.data,
       timestamp: response.data.timestamp || new Date().toISOString()
     } as any;
   }
