@@ -17,8 +17,12 @@ export interface InvokeAsyncOptions {
   pollIntervalMs?: number;
   /** Overall wall-clock budget in ms before giving up (default 600000 = 10min). */
   timeoutMs?: number;
+  /** Called once immediately after POST /agent-jobs returns the new job. */
+  onCreated?: (job: AgentJob) => void;
   /** Called after every poll with the latest job snapshot (phase/progress). */
   onProgress?: (job: AgentJob) => void;
+  /** Abort client-side polling when triggered; the server job keeps running. */
+  signal?: AbortSignal;
   /** Per-call model settings forwarded to the invoke (temperature, maxTokens, ...). */
   settings?: Record<string, any>;
   lang?: string;
@@ -68,11 +72,26 @@ export class Agents extends BaseClient {
     const {
       pollIntervalMs = 2500,
       timeoutMs = 600000,
+      onCreated,
       onProgress,
+      signal,
       settings,
       lang,
       idempotencyKey,
     } = opts;
+
+    const throwIfAborted = (current: AgentJob) => {
+      if (!signal?.aborted) return;
+      const err = new Error('Agent job polling aborted');
+      err.name = 'AbortError';
+      (err as any).job = current;
+      throw err;
+    };
+
+    const notify = (handler: ((job: AgentJob) => void) | undefined, current: AgentJob) => {
+      if (!handler) return;
+      try { handler(current); } catch { /* observer errors must not kill polling */ }
+    };
 
     const payload: Record<string, any> = { inputs };
     if (UUID_RE.test(idOrIdentifier)) payload.agentId = idOrIdentifier;
@@ -90,10 +109,13 @@ export class Agents extends BaseClient {
       throw new Error('agent-jobs: unexpected create response');
     }
 
+    notify(onCreated, job);
+
     const deadline = Date.now() + timeoutMs;
     const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
     for (;;) {
+      throwIfAborted(job);
       if (job.status === 'SUCCEEDED') return job.result;
       if (job.status === 'FAILED' || job.status === 'CANCELLED') {
         const err = new Error(job.error || `Agent job ${job.status.toLowerCase()}`);
@@ -106,11 +128,10 @@ export class Agents extends BaseClient {
         throw err;
       }
       await sleep(pollIntervalMs);
+      throwIfAborted(job);
       const polled: AgentJobEnvelope = await this.get(`/agent-jobs/${job.id}`);
       job = polled?.data ?? (polled as any);
-      if (onProgress) {
-        try { onProgress(job); } catch { /* observer errors must not kill polling */ }
-      }
+      notify(onProgress, job);
     }
   }
 
