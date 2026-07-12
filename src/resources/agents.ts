@@ -1,29 +1,117 @@
 import { BaseClient } from '../client/base';
-import { 
-  Agent, 
-  CreateAgentRequest, 
-  AgentExecuteRequest, 
+import {
+  Agent,
+  CreateAgentRequest,
+  AgentExecuteRequest,
   AgentChatRequest,
   PaginationParams,
-  GeniSpacePaginationResponse 
+  GeniSpacePaginationResponse
 } from '../types';
+import { AgentJob, AgentJobEnvelope } from './agentJobs';
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** Options for Agents.invokeAsync polling. */
+export interface InvokeAsyncOptions {
+  /** Poll interval in ms (default 2500). */
+  pollIntervalMs?: number;
+  /** Overall wall-clock budget in ms before giving up (default 600000 = 10min). */
+  timeoutMs?: number;
+  /** Called after every poll with the latest job snapshot (phase/progress). */
+  onProgress?: (job: AgentJob) => void;
+  /** Per-call model settings forwarded to the invoke (temperature, maxTokens, ...). */
+  settings?: Record<string, any>;
+  lang?: string;
+  /** Opt-in dedupe key: identical active jobs are reused instead of re-running. */
+  idempotencyKey?: string;
+}
 
 /**
  * 智能体管理资源
  */
 export class Agents extends BaseClient {
-  
+
   /**
    * 获取智能体列表
    */
   async list(params?: PaginationParams & {
     agentType?: 'CHAT' | 'TASK';
     search?: string;
+    /** App-provisioned agent identifier (resources.json / metadata.identifier). */
+    identifier?: string;
   }): Promise<{
     data: Agent[];
     pagination: GeniSpacePaginationResponse;
   }> {
     return this.get('/agents', params);
+  }
+
+  /**
+   * 异步执行智能体任务（AGENT_INVOKE 后台任务）。
+   *
+   * Enqueues an AGENT_INVOKE job (POST /agent-jobs), polls GET /agent-jobs/:id
+   * until it reaches a terminal state, and returns `job.result` — the same
+   * response body the synchronous `execute()` returns. Prefer this for
+   * minute-scale TASK invokes so no HTTP request is held open.
+   *
+   * @param idOrIdentifier agent UUID, or the installed-app identifier
+   *   (metadata.identifier) when not a UUID.
+   * @throws Error with `.job` attached when the job FAILED / CANCELLED or the
+   *   polling budget is exhausted. A 404 on POST /agent-jobs means the platform
+   *   predates this endpoint (callers may fall back to `execute()`).
+   */
+  async invokeAsync(
+    idOrIdentifier: string,
+    inputs: Record<string, any>,
+    opts: InvokeAsyncOptions = {}
+  ): Promise<any> {
+    const {
+      pollIntervalMs = 2500,
+      timeoutMs = 600000,
+      onProgress,
+      settings,
+      lang,
+      idempotencyKey,
+    } = opts;
+
+    const payload: Record<string, any> = { inputs };
+    if (UUID_RE.test(idOrIdentifier)) payload.agentId = idOrIdentifier;
+    else payload.agentIdentifier = idOrIdentifier;
+    if (settings) payload.settings = settings;
+    if (lang) payload.lang = lang;
+    if (idempotencyKey) payload.idempotencyKey = idempotencyKey;
+
+    const created: AgentJobEnvelope = await this.post('/agent-jobs', {
+      type: 'AGENT_INVOKE',
+      payload,
+    });
+    let job: AgentJob = created?.data ?? (created as any);
+    if (!job?.id) {
+      throw new Error('agent-jobs: unexpected create response');
+    }
+
+    const deadline = Date.now() + timeoutMs;
+    const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+    for (;;) {
+      if (job.status === 'SUCCEEDED') return job.result;
+      if (job.status === 'FAILED' || job.status === 'CANCELLED') {
+        const err = new Error(job.error || `Agent job ${job.status.toLowerCase()}`);
+        (err as any).job = job;
+        throw err;
+      }
+      if (Date.now() >= deadline) {
+        const err = new Error(`Agent job timed out after ${timeoutMs}ms`);
+        (err as any).job = job;
+        throw err;
+      }
+      await sleep(pollIntervalMs);
+      const polled: AgentJobEnvelope = await this.get(`/agent-jobs/${job.id}`);
+      job = polled?.data ?? (polled as any);
+      if (onProgress) {
+        try { onProgress(job); } catch { /* observer errors must not kill polling */ }
+      }
+    }
   }
 
   /**

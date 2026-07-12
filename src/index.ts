@@ -2,6 +2,7 @@ import { GeniSpaceConfig } from './types';
 import { Users } from './resources/users';
 import { ApiKeys } from './resources/apiKeys';
 import { Agents } from './resources/agents';
+import { AgentJobs } from './resources/agentJobs';
 import { Tasks } from './resources/tasks';
 import { Storage } from './resources/storage';
 import { Data } from './resources/data';
@@ -23,6 +24,9 @@ export type {
 export { Operators } from './resources/operators';
 export type { OperatorExecuteRequest, OperatorExecuteResponse } from './resources/operators';
 export { Spaces } from './resources/spaces';
+export { AgentJobs } from './resources/agentJobs';
+export type { AgentJob, AgentJobStatus, CreateAgentJobRequest, AgentJobEnvelope } from './resources/agentJobs';
+export type { InvokeAsyncOptions } from './resources/agents';
 
 /**
  * GeniSpace SDK 主客户端
@@ -33,6 +37,7 @@ export class GeniSpace {
   public users: Users;
   public apiKeys: ApiKeys;
   public agents: Agents;
+  public agentJobs: AgentJobs;
   public tasks: Tasks;
   public storage: Storage;
   public data: Data;
@@ -48,6 +53,7 @@ export class GeniSpace {
     this.users = new Users(config);
     this.apiKeys = new ApiKeys(config);
     this.agents = new Agents(config);
+    this.agentJobs = new AgentJobs(config);
     this.tasks = new Tasks(config);
     this.storage = new Storage(config);
     this.data = new Data(config);
@@ -65,6 +71,7 @@ export class GeniSpace {
     this.users.updateApiKey(apiKey);
     this.apiKeys.updateApiKey(apiKey);
     this.agents.updateApiKey(apiKey);
+    this.agentJobs.updateApiKey(apiKey);
     this.tasks.updateApiKey(apiKey);
     this.storage.updateApiKey(apiKey);
     this.data.updateApiKey(apiKey);
@@ -82,6 +89,7 @@ export class GeniSpace {
     this.users.updateBaseURL(baseURL);
     this.apiKeys.updateBaseURL(baseURL);
     this.agents.updateBaseURL(baseURL);
+    this.agentJobs.updateBaseURL(baseURL);
     this.tasks.updateBaseURL(baseURL);
     this.storage.updateBaseURL(baseURL);
     this.data.updateBaseURL(baseURL);
@@ -99,6 +107,7 @@ export class GeniSpace {
     this.users.updateAccessToken(accessToken);
     this.apiKeys.updateAccessToken(accessToken);
     this.agents.updateAccessToken(accessToken);
+    this.agentJobs.updateAccessToken(accessToken);
     this.tasks.updateAccessToken(accessToken);
     this.storage.updateAccessToken(accessToken);
     this.data.updateAccessToken(accessToken);
