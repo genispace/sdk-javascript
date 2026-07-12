@@ -17,11 +17,15 @@ export interface InvokeAsyncOptions {
   pollIntervalMs?: number;
   /** Overall wall-clock budget in ms before giving up (default 600000 = 10min). */
   timeoutMs?: number;
-  /** Called once immediately after POST /agent-jobs returns the new job. */
+  /** Called once with the freshly created job (202 response), before the first poll. */
   onCreated?: (job: AgentJob) => void;
   /** Called after every poll with the latest job snapshot (phase/progress). */
   onProgress?: (job: AgentJob) => void;
-  /** Abort client-side polling when triggered; the server job keeps running. */
+  /**
+   * Abort signal checked on each poll iteration. On abort, polling stops and an
+   * Error named 'AbortError' is thrown — the job itself keeps running server-side
+   * (use agentJobs.cancel() for cooperative cancellation).
+   */
   signal?: AbortSignal;
   /** Per-call model settings forwarded to the invoke (temperature, maxTokens, ...). */
   settings?: Record<string, any>;
@@ -80,14 +84,6 @@ export class Agents extends BaseClient {
       idempotencyKey,
     } = opts;
 
-    const throwIfAborted = (current: AgentJob) => {
-      if (!signal?.aborted) return;
-      const err = new Error('Agent job polling aborted');
-      err.name = 'AbortError';
-      (err as any).job = current;
-      throw err;
-    };
-
     const notify = (handler: ((job: AgentJob) => void) | undefined, current: AgentJob) => {
       if (!handler) return;
       try { handler(current); } catch { /* observer errors must not kill polling */ }
@@ -113,9 +109,18 @@ export class Agents extends BaseClient {
 
     const deadline = Date.now() + timeoutMs;
     const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+    const throwIfAborted = () => {
+      if (signal?.aborted) {
+        // The job keeps running server-side; we only stop observing it.
+        const err = new Error('Aborted');
+        err.name = 'AbortError';
+        (err as any).job = job;
+        throw err;
+      }
+    };
 
     for (;;) {
-      throwIfAborted(job);
+      throwIfAborted();
       if (job.status === 'SUCCEEDED') return job.result;
       if (job.status === 'FAILED' || job.status === 'CANCELLED') {
         const err = new Error(job.error || `Agent job ${job.status.toLowerCase()}`);
@@ -128,7 +133,7 @@ export class Agents extends BaseClient {
         throw err;
       }
       await sleep(pollIntervalMs);
-      throwIfAborted(job);
+      throwIfAborted();
       const polled: AgentJobEnvelope = await this.get(`/agent-jobs/${job.id}`);
       job = polled?.data ?? (polled as any);
       notify(onProgress, job);
