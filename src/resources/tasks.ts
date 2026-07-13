@@ -20,6 +20,8 @@ export class Tasks extends BaseClient {
     type?: 'SCHEDULED' | 'EVENT' | 'MANUAL';
     priority?: 'LOW' | 'MEDIUM' | 'HIGH';
     tags?: string;
+    /** Filter by the task's stable identifier (column or executionConfig.identifier). */
+    identifier?: string;
     startDate?: string;
     endDate?: string;
     search?: string;
@@ -29,6 +31,22 @@ export class Tasks extends BaseClient {
     pagination: GeniSpacePaginationResponse;
   }> {
     return this.get('/tasks', params);
+  }
+
+  /**
+   * 按稳定标识符解析单个任务（应用安装时写入的 resources.json identifier）。
+   *
+   * Resolve one task by its stable identifier. The platform's `?identifier=`
+   * filter matches the identifier column or `executionConfig.identifier` and
+   * returns just that task. Prefer this over `list({ search })`, which only
+   * matches name/description.
+   *
+   * @returns the matching task, or `null` when none is provisioned in the space.
+   */
+  async getByIdentifier(identifier: string): Promise<Task | null> {
+    const res = await this.list({ identifier, limit: 5 });
+    const rows = res.data ?? [];
+    return rows.find((t) => t.identifier === identifier || t.executionConfig?.identifier === identifier) ?? null;
   }
 
   /**

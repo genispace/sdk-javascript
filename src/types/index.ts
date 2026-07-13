@@ -91,6 +91,8 @@ export interface GeniSpaceApiKeyResponse extends Omit<ApiKey, 'id'> {
 export interface Agent {
   id: string;
   name: string;
+  /** Stable per-space identifier (app-provisioned agents; may be null for user agents). */
+  identifier?: string | null;
   description?: string;
   model: string;
   provider?: string;
@@ -102,6 +104,8 @@ export interface Agent {
   mcpConfig?: Record<string, any>;
   memoryConfig?: Record<string, any>;
   webSearchConfig?: Record<string, any>;
+  /** Install metadata; app-provisioned agents carry `{ identifier, appIdentifier }`. */
+  metadata?: { identifier?: string; appIdentifier?: string } & Record<string, any>;
   createdAt: string;
   updatedAt: string;
 }
@@ -162,6 +166,8 @@ export interface AgentChatRequest {
 export interface Task {
   id: string;
   name: string;
+  /** Stable per-space identifier (app-provisioned tasks; may be null for user tasks). */
+  identifier?: string | null;
   description?: string;
   type: 'SCHEDULED' | 'EVENT' | 'MANUAL';
   priority: 'LOW' | 'MEDIUM' | 'HIGH';
@@ -179,7 +185,8 @@ export interface Task {
     description?: string;
     isSecret?: boolean;
   }>;
-  executionConfig?: Record<string, any>;
+  /** App-provisioned tasks carry the identifier here on schemas without the column. */
+  executionConfig?: { identifier?: string } & Record<string, any>;
   errorHandling?: Record<string, any>;
   monitoringConfig?: Record<string, any>;
   createdAt: string;
