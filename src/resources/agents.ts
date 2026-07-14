@@ -55,6 +55,23 @@ export class Agents extends BaseClient {
   }
 
   /**
+   * 按稳定标识符解析单个智能体（应用安装时写入的 resources.json identifier）。
+   *
+   * Resolve one agent by its stable identifier. The platform's `?identifier=`
+   * filter matches the identifier column or `metadata.identifier` and returns
+   * just that agent — exact, and unaffected by the agents-list `limit<=100` cap.
+   * Prefer this over `list({ search })`, which only matches name/description and
+   * can never resolve an agent by identifier.
+   *
+   * @returns the matching agent, or `null` when none is provisioned in the space.
+   */
+  async getByIdentifier(identifier: string): Promise<Agent | null> {
+    const res = await this.list({ identifier, limit: 5 });
+    const rows = res.data ?? [];
+    return rows.find((a) => a.identifier === identifier || a.metadata?.identifier === identifier) ?? null;
+  }
+
+  /**
    * 异步执行智能体任务（AGENT_INVOKE 后台任务）。
    *
    * Enqueues an AGENT_INVOKE job (POST /agent-jobs), polls GET /agent-jobs/:id
