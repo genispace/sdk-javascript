@@ -45,10 +45,56 @@ export interface FileListResponse {
     items: StorageFile[];
     pagination: GeniSpacePaginationResponse;
 }
+export interface StorageUploadGrant {
+    id: string;
+    applicationId: string;
+    purpose: string;
+    folderPath: string;
+    fileName: string;
+    mimeType: string;
+    maxSize: number;
+    expiresAt: string;
+}
+export interface CreateStorageUploadGrantInput {
+    applicationId: string;
+    permissionCode: string;
+    purpose: string;
+    fileName: string;
+    mimeType: string;
+    size: number;
+}
+export interface StorageFileAccessGrant {
+    id: string;
+    applicationId: string;
+    fileId: string;
+    url: string;
+    expiresAt: string;
+    disposition: 'inline' | 'download';
+}
+export interface CreateStorageFileAccessGrantInput {
+    applicationId: string;
+    fileId: string;
+    permissionCode: string;
+    disposition?: 'inline' | 'download';
+}
+export interface BindApplicationStorageFileInput {
+    applicationId: string;
+    permissionCode: string;
+    visibility: 'private' | 'public';
+    authorizedUserIds: string[];
+}
 /**
  * 存储管理资源
  */
 export declare class Storage extends BaseClient {
+    createUploadGrant(input: CreateStorageUploadGrantInput): Promise<StorageUploadGrant>;
+    createFileAccessGrant(input: CreateStorageFileAccessGrantInput): Promise<StorageFileAccessGrant>;
+    bindApplicationFile(fileId: string, input: BindApplicationStorageFileInput): Promise<{
+        fileId: string;
+        applicationId: string;
+        visibility: 'private' | 'public';
+        authorizedUserIds: string[];
+    }>;
     /**
      * 上传文件
      * @param file - 文件对象（Node.js 环境）或 File 对象（浏览器环境）
@@ -60,6 +106,7 @@ export declare class Storage extends BaseClient {
         folderId?: string;
         folderPath?: string;
         fileName?: string;
+        uploadGrantId?: string;
     }): Promise<StorageFile>;
     /**
      * 获取文件列表

@@ -52,6 +52,49 @@ export interface FileListResponse {
   pagination: GeniSpacePaginationResponse;
 }
 
+export interface StorageUploadGrant {
+  id: string;
+  applicationId: string;
+  purpose: string;
+  folderPath: string;
+  fileName: string;
+  mimeType: string;
+  maxSize: number;
+  expiresAt: string;
+}
+
+export interface CreateStorageUploadGrantInput {
+  applicationId: string;
+  permissionCode: string;
+  purpose: string;
+  fileName: string;
+  mimeType: string;
+  size: number;
+}
+
+export interface StorageFileAccessGrant {
+  id: string;
+  applicationId: string;
+  fileId: string;
+  url: string;
+  expiresAt: string;
+  disposition: 'inline' | 'download';
+}
+
+export interface CreateStorageFileAccessGrantInput {
+  applicationId: string;
+  fileId: string;
+  permissionCode: string;
+  disposition?: 'inline' | 'download';
+}
+
+export interface BindApplicationStorageFileInput {
+  applicationId: string;
+  permissionCode: string;
+  visibility: 'private' | 'public';
+  authorizedUserIds: string[];
+}
+
 /**
  * Detect File/Blob across Vite prebundle / iframe realm boundaries (`instanceof` alone may fail).
  */
@@ -67,6 +110,51 @@ function isBrowserUploadFile(file: unknown): file is Blob {
  * 存储管理资源
  */
 export class Storage extends BaseClient {
+  /**
+   * Creates a one-time, short-lived upload authorization scoped to one
+   * application permission and one file.
+   */
+  async createUploadGrant(input: CreateStorageUploadGrantInput): Promise<StorageUploadGrant> {
+    const response = await this.post<{ data: StorageUploadGrant }>('/storage/upload-grants', input);
+    return (response as { data?: StorageUploadGrant }).data ?? (response as unknown as StorageUploadGrant);
+  }
+
+  /**
+   * Issue a short-lived signed URL under an installed application's permission
+   * and row-level visibility model.
+   */
+  async createFileAccessGrant(
+    input: CreateStorageFileAccessGrantInput
+  ): Promise<StorageFileAccessGrant> {
+    const response = await this.post<{ data: StorageFileAccessGrant }>(
+      '/storage/access-grants',
+      input
+    );
+    return (response as { data?: StorageFileAccessGrant }).data ??
+      (response as unknown as StorageFileAccessGrant);
+  }
+
+  /**
+   * Bind a grant-uploaded file to application users. Authorizing users other
+   * than the uploader requires the application's manage permission.
+   */
+  async bindApplicationFile(
+    fileId: string,
+    input: BindApplicationStorageFileInput
+  ): Promise<{
+    fileId: string;
+    applicationId: string;
+    visibility: 'private' | 'public';
+    authorizedUserIds: string[];
+  }> {
+    const response = await this.patch<{ data: {
+      fileId: string;
+      applicationId: string;
+      visibility: 'private' | 'public';
+      authorizedUserIds: string[];
+    } }>(`/storage/application-files/${fileId}/binding`, input);
+    return (response as any).data || response as any;
+  }
   
   /**
    * 上传文件
@@ -81,6 +169,7 @@ export class Storage extends BaseClient {
       folderId?: string;
       folderPath?: string;
       fileName?: string;
+      uploadGrantId?: string;
     }
   ): Promise<StorageFile> {
     if (isBrowserEnvironment()) {
@@ -99,6 +188,9 @@ export class Storage extends BaseClient {
       }
       if (options?.folderPath) {
         browserForm.append('path', options.folderPath);
+      }
+      if (options?.uploadGrantId) {
+        browserForm.append('uploadGrantId', options.uploadGrantId);
       }
       const response = await this.post<{ data: StorageFile }>(
         '/storage/files/upload',
@@ -147,6 +239,9 @@ export class Storage extends BaseClient {
     }
     if (options?.folderPath) {
       formData.append('path', options.folderPath);
+    }
+    if (options?.uploadGrantId) {
+      formData.append('uploadGrantId', options.uploadGrantId);
     }
 
     const response = await this.post<{ data: StorageFile }>('/storage/files/upload', formData, {
@@ -355,4 +450,3 @@ export class Storage extends BaseClient {
     return response.data || response as any;
   }
 }
-
