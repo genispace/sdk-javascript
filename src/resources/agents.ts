@@ -4,10 +4,18 @@ import {
   CreateAgentRequest,
   AgentExecuteRequest,
   AgentChatRequest,
+  AgentToolResultRequest,
   PaginationParams,
   GeniSpacePaginationResponse
 } from '../types';
 import { AgentJob, AgentJobEnvelope } from './agentJobs';
+import {
+  AgentStreamClient,
+  AgentStreamEvent,
+  AgentStreamRequestOptions,
+  BuiltinAgentStreamRequest,
+} from '../streaming';
+import { GeniSpaceError } from '../types';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -189,7 +197,36 @@ export class Agents extends BaseClient {
    * 智能体聊天对话
    */
   async chat(agentId: string, data: AgentChatRequest): Promise<any> {
+    if (data.stream === true) {
+      throw new GeniSpaceError(
+        'agents.chat() is non-streaming; use agents.chatStream() for LangGraph V3 streams',
+        'AGENT_STREAM_METHOD_REQUIRED'
+      );
+    }
     return this.post(`/agents/${agentId}/chat`, data);
+  }
+
+  /** Stream a conversational agent using the platform LangGraph V3 contract. */
+  chatStream(
+    agentId: string,
+    data: AgentChatRequest,
+    options?: AgentStreamRequestOptions
+  ): AsyncGenerator<AgentStreamEvent> {
+    return new AgentStreamClient(this.config).chat(agentId, data, options);
+  }
+
+  /** Stream a code-defined CHAT built-in such as knowledge_copilot. */
+  builtinStream(
+    agentId: string,
+    data: BuiltinAgentStreamRequest,
+    options?: AgentStreamRequestOptions
+  ): AsyncGenerator<AgentStreamEvent> {
+    return new AgentStreamClient(this.config).builtin(agentId, data, options);
+  }
+
+  /** Resume an interrupted local-tool call with its client-side result. */
+  async submitToolResult(agentId: string, data: AgentToolResultRequest): Promise<any> {
+    return this.post(`/agents/${encodeURIComponent(agentId)}/tool-result`, data);
   }
 
   /**

@@ -16,7 +16,8 @@
     "@typescript-eslint"
   ],
   "rules": {
-    "no-unused-vars": "warn",
+    "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": ["warn", { "args": "none" }],
     "prefer-const": "warn",
     "no-var": "error",
     "no-console": "off"
@@ -24,6 +25,7 @@
   "ignorePatterns": [
     "lib/**/*",
     "node_modules/**/*",
+    "src/**/*.d.ts",
     "*.js"
   ]
 }
