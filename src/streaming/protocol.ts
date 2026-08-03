@@ -59,6 +59,9 @@ function projectProductEvent(data: Record<string, unknown>): AgentStreamEvent[] 
         type: typeof data.kind === 'string' ? data.kind : 'progress.update',
         content: typeof data.message === 'string' ? data.message : '',
         metadata: asRecord(data.metadata) || {},
+        ...(typeof data.timestamp === 'string' && data.timestamp
+          ? { timestamp: data.timestamp }
+          : {}),
       }];
     case 'input-required': {
       const interaction = asRecord(data.interaction) || {};
@@ -82,6 +85,14 @@ function projectProductEvent(data: Record<string, unknown>): AgentStreamEvent[] 
         metadata: {
           documents: Array.isArray(data.documents) ? data.documents : [],
           query: data.query,
+          kb_ids: Array.isArray(data.kbIds) ? data.kbIds : [],
+          retrieval_count: data.retrievalCount,
+          retrieval_time: data.retrievalTime,
+          execution_id: data.executionId,
+          turn_id: data.turnId,
+          messageId: data.messageId,
+          pluginId: 'knowledgebase-renderer',
+          success: true,
         },
       }];
     case 'skills-selected':
@@ -166,10 +177,20 @@ export class AgentStreamProtocolV3 {
     }
     if (event.method === 'tools') {
       const data = asRecord(params.data) || {};
+      const rawName = data.name ?? data.toolName ?? data.tool_name;
+      const name = typeof rawName === 'string' && rawName ? rawName : 'Tool execution';
+      const args = asRecord(data.arguments) || asRecord(data.args) || asRecord(data.input);
+      const result = data.result ?? data.output;
       return [{
         type: 'tool.execution',
-        content: typeof data.name === 'string' ? data.name : 'Tool execution',
-        metadata: data,
+        content: name,
+        metadata: {
+          ...data,
+          toolName: name,
+          tool_name: name,
+          ...(args ? { tool_params: args, arguments: args } : {}),
+          ...(result !== undefined ? { result } : {}),
+        },
       }];
     }
     if (event.method === 'lifecycle' || event.method === 'input') return [];

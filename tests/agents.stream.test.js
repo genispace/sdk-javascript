@@ -54,8 +54,8 @@ describe('LangGraph V3 agent stream SDK', () => {
 
     expect(protocol.project({
       type: 'event', method: 'custom:genispace', seq: 2,
-      params: { data: { event: 'activity', kind: 'thinking.update', message: 'reasoning', metadata: { stage: 'response' } } },
-    })).toEqual([{ type: 'thinking.update', content: 'reasoning', metadata: { stage: 'response' } }]);
+      params: { data: { event: 'activity', kind: 'thinking.update', message: 'reasoning', timestamp: '2026-08-02T01:02:03Z', metadata: { stage: 'response' } } },
+    })).toEqual([{ type: 'thinking.update', content: 'reasoning', metadata: { stage: 'response' }, timestamp: '2026-08-02T01:02:03Z' }]);
 
     expect(protocol.project({
       type: 'event', method: 'custom:genispace', seq: 3,
@@ -116,8 +116,17 @@ describe('LangGraph V3 agent stream SDK', () => {
       .toMatchObject({ type: 'session.started', metadata: { session_id: 's', turnId: 't' } });
     expect(product({ event: 'input-required', interaction: { question: 'Choose', options: [] } })[0])
       .toMatchObject({ type: 'agent.input.required', content: 'Choose' });
-    expect(product({ event: 'knowledge-evidence', query: 'policy', documents: [{ documentId: 'd' }] })[0])
-      .toMatchObject({ type: 'knowledge.evidence', metadata: { query: 'policy' } });
+    expect(product({
+      event: 'knowledge-evidence', query: 'policy', documents: [{ documentId: 'd' }],
+      kbIds: ['kb-1'], retrievalCount: 1, retrievalTime: 0.5,
+      executionId: 'kb_1', turnId: 'turn-1', messageId: 'message-1',
+    })[0]).toMatchObject({
+      type: 'knowledge.evidence',
+      metadata: {
+        query: 'policy', kb_ids: ['kb-1'], retrieval_count: 1,
+        execution_id: 'kb_1', turn_id: 'turn-1', pluginId: 'knowledgebase-renderer',
+      },
+    });
     expect(product({ event: 'content-delta', delta: 'delta' })).toEqual([{ type: 'content.delta', content: 'delta' }]);
     expect(product({ event: 'context-usage', usage: { usedPercent: 50 } })[0]).toMatchObject({ type: 'context.usage' });
     expect(product({ event: 'turn-persist-pending', turnId: 't' })[0]).toMatchObject({ type: 'turn.persist_pending' });
@@ -128,8 +137,15 @@ describe('LangGraph V3 agent stream SDK', () => {
       params: { data: { content: [{ text: 'one' }, { delta: { text: ' two' } }] } },
     })).toEqual([{ type: 'content.delta', content: 'one two' }]);
     expect(protocol.project({
-      type: 'event', method: 'tools', seq: ++seq, params: { data: { name: 'lookup', status: 'done' } },
-    })[0]).toMatchObject({ type: 'tool.execution', content: 'lookup' });
+      type: 'event', method: 'tools', seq: ++seq,
+      params: { data: { tool_name: 'lookup', status: 'done', args: { id: 1 }, output: { found: true } } },
+    })[0]).toMatchObject({
+      type: 'tool.execution', content: 'lookup',
+      metadata: {
+        toolName: 'lookup', tool_name: 'lookup',
+        tool_params: { id: 1 }, arguments: { id: 1 }, result: { found: true },
+      },
+    });
     expect(protocol.project({
       type: 'event', method: 'lifecycle', seq: ++seq, params: {},
     })).toEqual([]);
