@@ -204,15 +204,23 @@ export class Storage extends BaseClient {
       return (response as any).data || (response as any);
     }
 
-    const NodeFormData = require('form-data');
+    // Keep Node-only modules behind a runtime import so browser bundlers never
+    // traverse form-data, fs, or path while building the shared SDK entry.
+    const nodeFormDataSpecifier = 'form-data';
+    const nodeFormDataModule = await import(/* @vite-ignore */ nodeFormDataSpecifier);
+    const NodeFormData = nodeFormDataModule.default;
     const formData = new NodeFormData();
 
     // 处理文件对象
     if (file && typeof file === 'object') {
       // Node.js 环境：可能是文件路径或流
       if (file.path) {
-        const fs = require('fs');
-        const path = require('path');
+        const nodeFsSpecifier = 'node:fs';
+        const nodePathSpecifier = 'node:path';
+        const [fs, path] = await Promise.all([
+          import(/* @vite-ignore */ nodeFsSpecifier),
+          import(/* @vite-ignore */ nodePathSpecifier),
+        ]);
         const fileName = options?.fileName || path.basename(file.path);
         formData.append('file', fs.createReadStream(file.path), {
           filename: fileName

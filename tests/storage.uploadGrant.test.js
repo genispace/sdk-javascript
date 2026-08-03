@@ -2,7 +2,7 @@
  * Storage upload grants are tested against the compiled SDK output.
  * Run `npm run build` before `npm test`.
  */
-const { Storage } = require('../lib/resources/storage');
+const { Storage } = require('../lib/resources/storage.cjs');
 
 function makeStorage(post) {
   const storage = Object.create(Storage.prototype);

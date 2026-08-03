@@ -150,7 +150,12 @@ export interface AgentChatRequest {
     };
   }>;
   session_id?: string;
+  /** Stable client-generated idempotency id for one conversational turn. */
+  turnId?: string;
+  message_id?: string;
   stream?: boolean;
+  local_tools?: string[];
+  session_runtime?: 'LOCAL' | 'PLATFORM';
   settings?: {
     temperature?: number;
     max_tokens?: number;
@@ -158,6 +163,14 @@ export interface AgentChatRequest {
     frequency_penalty?: number;
     presence_penalty?: number;
   };
+}
+
+export interface AgentToolResultRequest {
+  session_id: string;
+  call_id: string;
+  status: 'success' | 'error' | 'denied' | 'timeout';
+  result?: unknown;
+  error?: string | null;
 }
 
 /**

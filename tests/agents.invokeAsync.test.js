@@ -2,7 +2,7 @@
  * Agents.invokeAsync — async agent-invoke progress UX v1.
  * Runs against the compiled output: `npm run build` before `npm test`.
  */
-const { Agents } = require('../lib/resources/agents');
+const { Agents } = require('../lib/resources/agents.cjs');
 
 /** An Agents instance with stubbed HTTP verbs (no real BaseClient config). */
 function makeAgents({ post, get }) {

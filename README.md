@@ -196,6 +196,34 @@ const session = await client.agents.createSession({
 });
 ```
 
+### LangGraph V3 streaming chat
+
+Streaming is intentionally separate from `agents.chat()` so an SSE response can never be
+mistaken for JSON. The SDK owns protocol negotiation, response acknowledgement, SSE framing,
+and contiguous sequence validation.
+
+```typescript
+const events = client.agents.chatStream(agent.id, {
+  contents: [{ type: 'text', text: 'Analyze this request' }],
+  turnId: crypto.randomUUID(),
+  session_id: 'session-id',
+  stream: true,
+}, { language: 'en' });
+
+for await (const event of events) {
+  if (event.type === 'content.delta') process.stdout.write(event.content ?? '');
+  if (event.type === 'agent.input.required') console.log(event.metadata);
+}
+```
+
+Code-defined conversational agents use `client.agents.builtinStream(...)`. Calling
+`agents.chat()` with `stream: true` fails explicitly; there is no legacy SSE parser.
+
+Desktop or gateway clients that must forward the original response bytes while observing
+product events can use `AgentStreamDecoder.push(chunk)` and `finish()`. This keeps incremental
+SSE framing and V3 sequence validation inside the SDK instead of duplicating a parser in the
+proxy.
+
 ### Task Management (Tasks)
 
 ```javascript

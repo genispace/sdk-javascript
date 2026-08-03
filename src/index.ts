@@ -27,6 +27,7 @@ export { Spaces } from './resources/spaces';
 export { AgentJobs } from './resources/agentJobs';
 export type { AgentJob, AgentJobStatus, CreateAgentJobRequest, AgentJobEnvelope } from './resources/agentJobs';
 export type { InvokeAsyncOptions } from './resources/agents';
+export * from './streaming';
 
 /**
  * GeniSpace SDK 主客户端
