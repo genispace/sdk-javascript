@@ -90,7 +90,7 @@ git push origin --tags
 ## 📦 发布后验证
 
 ### ✅ NPM验证
-- [ ] 访问 https://www.npmjs.com/package/genispace
+- [ ] 访问 https://www.npmjs.com/package/@genispace/sdk
 - [ ] 检查版本号正确
 - [ ] 检查文件列表完整
 
@@ -99,15 +99,15 @@ git push origin --tags
 # 新目录测试安装
 mkdir test-install && cd test-install
 npm init -y
-npm install genispace
+npm install @genispace/sdk
 
 # 测试导入
-node -e "const { GeniSpace } = require('genispace'); console.log('SDK loaded:', typeof GeniSpace);"
+node -e "const { GeniSpace } = require('@genispace/sdk'); console.log('SDK loaded:', typeof GeniSpace);"
 ```
 
 ### ✅ 使用测试
 ```javascript
-const { GeniSpace } = require('genispace');
+const { GeniSpace } = require('@genispace/sdk');
 
 const client = new GeniSpace({
   apiKey: 'your-api-key',

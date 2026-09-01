@@ -136,4 +136,4 @@ export { GeniSpaceError } from './types';
 export default GeniSpace;
 
 // 勿在此添加 `module.exports`：浏览器/Vite MF 打包会报 `module is not defined`。Node 请用
-// `require('genispace').default` 或 `require('genispace').GeniSpace`（与 tsc 的 `exports.*` 一致）。
+// `require('@genispace/sdk').default` 或 `require('@genispace/sdk').GeniSpace`（与 tsc 的 `exports.*` 一致）。

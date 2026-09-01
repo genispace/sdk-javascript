@@ -2,7 +2,7 @@
 
 > Official JavaScript/TypeScript SDK for GeniSpace AI Platform
 
-[![npm version](https://badge.fury.io/js/genispace.svg)](https://www.npmjs.com/package/genispace)
+[![npm version](https://img.shields.io/npm/v/%40genispace%2Fsdk.svg)](https://www.npmjs.com/package/@genispace/sdk)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-supported-blue.svg)](https://www.typescriptlang.org/)
 
@@ -24,7 +24,7 @@ GeniSpace JavaScript SDK is the official client library for [GeniSpace.ai](https
 ## 🚀 Installation
 
 ```bash
-npm install genispace
+npm install @genispace/sdk
 ```
 
 ## 🔧 Quick Start
@@ -32,7 +32,7 @@ npm install genispace
 ### Basic Usage
 
 ```javascript
-import GeniSpace from 'genispace';
+import GeniSpace from '@genispace/sdk';
 
 // Initialize client
 const client = new GeniSpace({
@@ -54,7 +54,7 @@ try {
 ### TypeScript Usage
 
 ```typescript
-import GeniSpace, { User, GeniSpaceError } from 'genispace';
+import GeniSpace, { User, GeniSpaceError } from '@genispace/sdk';
 
 const client = new GeniSpace({
   apiKey: process.env.GENISPACE_API_KEY!
@@ -332,7 +332,7 @@ GENISPACE_BASE_URL=https://api.genispace.ai
 ```
 
 ```javascript
-import GeniSpace from 'genispace';
+import GeniSpace from '@genispace/sdk';
 
 const client = new GeniSpace({
   apiKey: process.env.GENISPACE_API_KEY,
@@ -345,7 +345,7 @@ const client = new GeniSpace({
 ### Error Handling
 
 ```javascript
-import { GeniSpaceError } from 'genispace';
+import { GeniSpaceError } from '@genispace/sdk';
 
 try {
   const result = await client.agents.execute('agent-id', { inputs: {} });
@@ -425,7 +425,7 @@ Team-scoped **UserOperator** execution uses **`POST /operators/execute`**. The S
 **Response**: Flat JSON (`success`, `result`, `operator`, `executionTime`, …) — not wrapped in `{ data: ... }`.
 
 ```typescript
-import GeniSpace from 'genispace';
+import GeniSpace from '@genispace/sdk';
 
 const client = new GeniSpace({
   apiKey: process.env.GENISPACE_API_KEY!,
@@ -452,7 +452,7 @@ Team-scoped SQL DataSources use **`GET /datasources`** and **`GET /datasources/:
 3. Call `queryDataSourceRead(id, { page, limit, ... })` — extra keys become SQL bind parameters when the datasource statement uses `{{param}}` placeholders.
 
 ```typescript
-import GeniSpace from 'genispace';
+import GeniSpace from '@genispace/sdk';
 
 const client = new GeniSpace({
   apiKey: process.env.GENISPACE_TOKEN!,

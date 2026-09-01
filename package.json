@@ -1,5 +1,5 @@
 {
-  "name": "genispace",
+  "name": "@genispace/sdk",
   "version": "3.1.0",
   "description": "GeniSpace AI Platform JavaScript SDK - Official client library for GeniSpace platform APIs",
   "main": "./lib/index.cjs",
