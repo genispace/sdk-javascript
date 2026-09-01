@@ -29,8 +29,8 @@ jobs:
         run: |
           PACKAGE_VERSION=$(node -p "require('./package.json').version")
           test "$GITHUB_REF_NAME" = "v$PACKAGE_VERSION"
-          if npm view "genispace@$PACKAGE_VERSION" version >/dev/null 2>&1; then
-            echo "genispace@$PACKAGE_VERSION is already published"
+          if npm view "@genispace/sdk@$PACKAGE_VERSION" version >/dev/null 2>&1; then
+            echo "@genispace/sdk@$PACKAGE_VERSION is already published"
             exit 1
           fi
 
